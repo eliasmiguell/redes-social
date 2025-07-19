@@ -7,6 +7,7 @@ import { IPost, IUser } from '@/interface';
 import Link from 'next/link';
 import Post from '@/components/Post';
 import Image from 'next/image';
+
 function SearchPage() {
   const searchParams = useSearchParams();
   const params = searchParams.get('params');
@@ -74,4 +75,14 @@ function SearchPage() {
   );
 }
 
-export default SearchPage;
+import { Suspense } from 'react';
+
+function SearchPageWrapper() {
+  return (
+    <Suspense fallback={<div>Carregando busca...</div>}>
+      <SearchPage />
+    </Suspense>
+  );
+}
+
+export default SearchPageWrapper;

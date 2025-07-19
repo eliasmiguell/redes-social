@@ -112,7 +112,7 @@ if(comentQuery.error){
             />
             <div className=' flex flex-col'>
               <span className='font-semibold'>{username}</span>
-              <span className='text-xs'>{moment(created_at).fromNow()}</span>
+              <span className='text-xs'>{moment(created_at).local().fromNow()}</span>
             </div>
             </Link>
           </header>

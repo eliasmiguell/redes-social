@@ -130,7 +130,7 @@ function Profile() {
         .put(`/users/update-users`, data)
         .then((res) => {
           if (user) {
-            const newUser = { username: username, userimg: userimg, bgimg: bgimg, email: user.email, id:id };
+            const newUser = { username: username, userimg: userimg, bgimg: bgimg, email: user.email, id: id! };
             setUser(newUser);
             return res.data;
           }

@@ -6,6 +6,7 @@ import { UserContext } from '@/context/UserContext';
 import { toast } from 'react-toastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { makeRequest } from '../../axios';
+import Image from 'next/image';
 
 
 function EditProfile() {
@@ -112,13 +113,14 @@ function EditProfile() {
             {userimg && (
               <div className="mt-2">
                 <p className="text-sm text-gray-500 mb-1">Prévia:</p>
-                <img 
+                <Image 
                   src={userimg} 
                   alt="Prévia da imagem de perfil" 
                   className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
+                  width={64}
+                  height={64}
+                  quality={100} 
+                  unoptimized={true}
                 />
               </div>
             )}
@@ -137,13 +139,14 @@ function EditProfile() {
             {bgimg && (
               <div className="mt-2">
                 <p className="text-sm text-gray-500 mb-1">Prévia:</p>
-                <img 
+                <Image 
                   src={bgimg} 
                   alt="Prévia da imagem de fundo" 
                   className="w-32 h-20 rounded-lg object-cover border-2 border-gray-200"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
+                  width={128}
+                  height={80}
+                  quality={100} 
+                  unoptimized={true}
                 />
               </div>
             )}

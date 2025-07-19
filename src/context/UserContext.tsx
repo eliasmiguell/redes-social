@@ -44,27 +44,28 @@ interface ContextProps {
   children: React.ReactNode;
 }
 
-interface User {
-  user: {
-    id: number;
-    email: string;
-    username: string;
-    userimg: string;
-    bgimg: string;
-  } | undefined;
-
-  setUser: (newState: any) => void;
+interface UserData {
+  id: number;
+  email: string;
+  username: string;
+  userimg: string;
+  bgimg: string;
 }
 
-const initialValue = {
+interface UserContextType {
+  user: UserData | undefined;
+  setUser: (newState: UserData | undefined) => void;
+}
+
+const initialValue: UserContextType = {
   user: undefined,
   setUser: () => {},
 };
 
-export const UserContext = createContext<User>(initialValue);
+export const UserContext = createContext<UserContextType>(initialValue);
 
 export const UserContextProvider = ({ children }: ContextProps) => {
-  const [user, setUser] = useState(initialValue.user);
+  const [user, setUser] = useState<UserData | undefined>(undefined);
   
   useEffect(() => {
       const UserJSON = localStorage.getItem("rede-social:user");

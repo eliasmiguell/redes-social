@@ -81,3 +81,11 @@ export interface INotification{
   follower_id:number,
   followed_id:number,
  }
+
+// Função utilitária para garantir que nunca passemos string vazia para o componente Image
+export const getValidImageUrl = (img?: string | null): string => {
+  if (!img || img.trim() === '') {
+    return 'https://img.freepik.com/free-icon/user_318-159711.jpg';
+  }
+  return img;
+};

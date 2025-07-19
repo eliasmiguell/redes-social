@@ -40,7 +40,7 @@ function Register() {
       setConfirmPassword('');
     } catch (err: unknown) {
       const errorMessage = err && typeof err === 'object' && 'response' in err 
-        ? (err.response as any)?.data?.message 
+        ? (err.response as { data?: { message?: string } })?.data?.message 
         : 'Erro ao fazer cadastro';
       toast.error(errorMessage);
       console.log(err);

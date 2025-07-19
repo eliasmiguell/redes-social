@@ -22,7 +22,7 @@ function Coment(props:{coment : IComents}) {
           <span className='font-semibold'>{username}</span>
           <span>{coment_desc}</span>
         </div>
-        <span className='text-xs'>{moment(created_at).fromNow()}</span>
+        <span className='text-xs'>{moment(created_at).local().fromNow()}</span>
       </div>
     </div>
   );

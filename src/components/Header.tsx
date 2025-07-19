@@ -39,6 +39,7 @@ function Header() {
         userimg: user[0].userimg,
         id: user[0].id,
         email: user[0].email,
+        bgimg: user[0].bgimg || '',
       });
     }
   }, [user, setUser]);

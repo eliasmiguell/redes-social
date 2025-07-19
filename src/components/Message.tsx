@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { IMessage, IUser } from '@/interface';
+import { IMessage, IUser, getValidImageUrl } from '@/interface';
 import { makeRequest } from '../../axios';
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -117,7 +117,7 @@ function Message() {
         user_id: Number(user?.id),
       });
     }
-  }, [id, user?.id]);
+  }, [id, user?.id, markAllMessagesAsReadMutation]);
 
   const querMessages = useQuery({
     queryKey: ['messages', id],
@@ -146,7 +146,7 @@ function Message() {
               <Link href={`/profile?id=${res?.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div className="relative">
                   <Image
-                    src={res?.userimg ? res?.userimg : 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+                    src={getValidImageUrl(res?.userimg)}
                     alt="Imagem do perfil"
                     className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                     width={40}
@@ -181,7 +181,7 @@ function Message() {
                   {showImage && !isUserMessage && (
                     <Link href={`/profile?id=${idUserConversa?.id}`}>
                       <Image
-                        src={message?.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+                        src={getValidImageUrl(message?.userimg)}
                         alt="Imagem do perfil"
                         className="w-8 h-8 rounded-full object-cover"
                         width={32}
@@ -201,7 +201,7 @@ function Message() {
                       <p className="break-words">{message?.messages}</p>
                       
                       <div className="flex items-center justify-between mt-2 text-xs opacity-70">
-                        <span>{moment(message.sent_at).fromNow()}</span>
+                        <span>{moment(message.sent_at).local().fromNow()}</span>
                         <div className="flex items-center gap-1">
                           {message.is_read ? (
                             <FaCheckDouble className="text-blue-300" />
@@ -238,7 +238,7 @@ function Message() {
                   {showImage && isUserMessage && (
                     <Link href={`/profile?id=${user?.id}`}>
                       <Image
-                        src={message?.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+                        src={getValidImageUrl(message?.userimg)}
                         alt="Imagem do perfil"
                         className="w-8 h-8 rounded-full object-cover"
                         width={32}
