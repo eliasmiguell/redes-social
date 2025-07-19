@@ -57,55 +57,78 @@ function Share() {
   };
 
   return (
-    
-    <div className='w-full bg-white rounded-lg p-4 shadow-md flex flex-col gap-3'>
-      {img && <Image className='rounded' src={postImg} alt='imagem posts'
-            width={32}
-            height={32} quality={100} 
+    <div className='w-full p-6 flex flex-col gap-4'>
+      {/* Preview da imagem */}
+      {img && (
+        <div className="relative">
+          <Image 
+            className='rounded-xl w-full max-h-64 object-cover' 
+            src={postImg} 
+            alt='imagem posts'
+            width={400}
+            height={200} 
+            quality={100} 
             unoptimized={true}
-            />}
+          />
+          <button 
+            onClick={() => setImg(null)}
+            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
             
-      <span className='font-semibold'>Criar Post</span>
-      <div className='flex gap-4 pt-6'>
+      <div className='flex items-center gap-4'>
         <Image
           src={user?.userimg ? user.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
           alt="Imagem do perfil"
-          className='w-8 h-8 rounded-full'
-          width={32}
-          height={32}
+          className='w-12 h-12 rounded-full border-2 border-white shadow-sm'
+          width={48}
+          height={48}
           quality={100} 
           unoptimized={true}
         />
-        <div className='w-full bg-zinc-100 flex items-center text-gray-600 px-3 py-1 rounded-full'>
-          <input
-            onChange={(e) => setDesc(e.target.value)}
-            value={post_desc}
-            placeholder={`No que você está pensando ${user?.username}?`}
-            type="text"
-            className='bg-zinc-100 w-full focus-visible:outline-none'
-          />
-          <button onClick={() => sharePost()}>
-            <FaPaperPlane />
-          </button>
+        <div className='flex-1'>
+          <h3 className="font-semibold text-gray-800 mb-1">Criar Post</h3>
+          <div className='bg-white border border-gray-200 rounded-full flex items-center px-4 py-3 shadow-sm'>
+            <input
+              onChange={(e) => setDesc(e.target.value)}
+              value={post_desc}
+              placeholder={`No que você está pensando ${user?.username}?`}
+              type="text"
+              className='flex-1 bg-transparent focus:outline-none text-gray-700'
+            />
+            <button 
+              onClick={() => sharePost()}
+              disabled={!post_desc.trim()}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full p-2 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+            >
+              <FaPaperPlane className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className='flex justify-around py-4 text-gray-600 border-y'>
+      <div className='flex justify-around py-4 text-gray-600 border-t border-gray-200'>
         <input
           className="hidden"
           type="file"
           id="img"
           onChange={(e) => e.target.files && setImg(e.target.files[0])}
         />
-        <label htmlFor='img' className="flex">
-          <TbPhoto className='text-2xl' />Adicionar Imagem
+        <label htmlFor='img' className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer">
+          <TbPhoto className='text-xl text-blue-600' />
+          <span className="font-medium">Adicionar Imagem</span>
         </label>
-        <button className='flex items-center gap-1'>
-          <FaUserFriends className='text-2xl' />Marcar Amigo
+        <button className='flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white hover:shadow-sm transition-all'>
+          <FaUserFriends className='text-xl text-purple-600' />
+          <span className="font-medium">Marcar Amigo</span>
         </button>
       </div>
     </div>
-
   );
 }
 

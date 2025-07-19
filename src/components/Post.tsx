@@ -166,8 +166,8 @@ if(comentQuery.error){
             </button>
           </div>
           
-          { showComent && comentQuery.data?.map((coment, id)=>{
-             return <Coment coment={coment} key={id}/>
+          { showComent && comentQuery.data?.map((coment)=>{
+             return <Coment coment={coment} key={coment.id}/>
             })}
 
           <div className='flex gap-4 pt-6'>

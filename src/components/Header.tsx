@@ -31,13 +31,6 @@ function Header() {
       router.push('login');
     },
   });
-  // useEffect(() => {
-  //   if (user) {
-  //     if (!user) return;
-  //   }
-  // }, [user, setUser]);
-  
-  
   
   useEffect(() => {
     if (user && Array.isArray(user) && user.length > 0) {
@@ -67,12 +60,9 @@ function Header() {
     };
 
     handleSizeScreen();
-
     window.addEventListener('resize', handleSizeScreen);
-
     return () => window.removeEventListener('resize', handleSizeScreen);
   }, []);
-
 
   const GetNotification = useQuery<INotification[] | undefined>({
     queryKey: ['notification', user?.id],
@@ -118,6 +108,7 @@ function Header() {
 
   return (
     <>
+      {/* Menu mobile */}
       <div className="w-0/1">
         {showhamburger && isMobile ? (
           <div
@@ -153,35 +144,37 @@ function Header() {
               </Link>
             </nav>
           </div>
-        ) : (
-          ''
-        )}
+        ) : null}
       </div>
-      <header className="fixed z-10 w-full bg-white flex justify-between py-2 px-4 items-center shadow-md">
-        <Link href="/main" className="font-bold text-sky-900 text-lg">
-          Redes Sociais
+
+      {/* Header principal */}
+      <header className="fixed z-10 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 flex justify-between py-3 px-6 items-center shadow-sm">
+        <Link href="/main" className="font-bold text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          SocialConnect
         </Link>
+        
+        {/* Barra de pesquisa */}
         <div
-          className="flex bg-zinc-100 items-center text-gray-600 px-3 py-1 rounded-full relative"
+          className="flex bg-gray-50 items-center text-gray-600 px-4 py-2 rounded-full relative border border-gray-200 hover:border-gray-300 transition-colors"
           onClick={() => setSearchReult(true)}
           onMouseLeave={() => setSearchReult(false)}
         >
+          <FaSearch className="text-gray-400 mr-2" />
           <input
             type="text"
             value={search ? search : ''}
-            placeholder="Pesquisar"
-            className="bg-zinc-100 focus-visible:outline-none"
+            placeholder="Pesquisar usuários..."
+            className="bg-transparent focus-visible:outline-none w-64"
             onChange={(e) => setSearch(e.target.value)}
           />
-          <FaSearch />
 
           {search && searchResult && (
             <div className="absolute flex-col bg-white p-4 shadow-md rounded-md gap-2 border-t whitespace-nowrap right-0 left-0 top-[100%]">
-              {data?.map((users: IUser, id: number) => {
+              {data?.map((users: IUser) => {
                 return (
                   <Link
                     href={`/profile?id=${users?.id}`}
-                    key={id}
+                    key={users.id}
                     className="flex items-center pb-2 gap-3"
                     onClick={() => {
                       setSearch(null);
@@ -215,6 +208,7 @@ function Header() {
           )}
         </div>
 
+        {/* Ações do usuário */}
         {isMobile ? (
           <div onClick={() => setShowHamburger(!showhamburger)}>
             {showhamburger ? (
@@ -226,43 +220,55 @@ function Header() {
         ) : (
           <>
             <div className="flex gap-5 items-center text-gray-600">
-              <div className="flex gap-4">
-                <Link href="/messagens" className=" relative bg-zinc-200 p-5 rounded-full hover:bg-zinc-300">
-                  <FaFacebookMessenger />
+              <div className="flex gap-3">
+                <Link href="/messagens" className="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition-colors">
+                  <FaFacebookMessenger className="text-gray-600" />
                   {totalUnreadMessages > 0 && (
-                  <span className="absolute top-0 right-[1px] bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {totalUnreadMessages}
                   </span>
                   )}
                 </Link>
-                <Link href="/notifications" className="bg-zinc-200 p-5 rounded-full hover:bg-zinc-300">
-                  <FaBell />
+                <Link href="/notifications" className="bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition-colors">
+                  <FaBell className="text-gray-600" />
                 </Link>
               </div>
 
               <div className="relative" onMouseLeave={() => setShowMenu(false)}>
-                <button className="flex gap-2 items-center" onClick={() => setShowMenu(!showMenu)}>
+                <button className="flex gap-2 items-center hover:bg-gray-100 p-2 rounded-full transition-colors" onClick={() => setShowMenu(!showMenu)}>
                   <Image
                     src={user?.userimg ? user.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
                     alt="Imagem do perfil"
-                    className="w-8 h-8 rounded-full"
+                    className="w-8 h-8 rounded-full object-cover"
                     width={32}
                     height={32}
                     quality={100} 
                     unoptimized={true}
                   />
-                  <span className="font-bold">{user?.username}</span>
-                  <HiChevronDown className="w-8 h-8" />
+                  <span className="font-semibold text-gray-800">{user?.username}</span>
+                  <HiChevronDown className="text-gray-500" />
                 </button>
+                
                 {showMenu && (
-                  <div className="absolute flex-col bg-white p-4 shadow-md rounded-md gap-2 border-t whitespace-nowrap right-[-8px]">
-                    <Link href={`/editprofile?id=${user?.id}`} className="border-b">
-                      Editar perfil
+                  <div className="absolute right-0 top-12 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10">
+                    <Link
+                      href={`/profile?id=${user?.id}`}
+                      className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md text-sm"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      <FaUserFriends className="text-gray-500" />
+                      Ver perfil
                     </Link>
-                    <br />
-                    <Link href="" onClick={() => mutation.mutate()}>
+                    <button
+                      onClick={() => {
+                        mutation.mutate();
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm w-full"
+                    >
+                      <IoLogOut className="text-gray-500" />
                       Sair
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>

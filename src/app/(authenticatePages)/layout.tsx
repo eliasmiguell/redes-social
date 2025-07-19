@@ -4,8 +4,6 @@ import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-
-
 import { makeRequest } from '../../../axios';
 
 export default function MainHome({children}:{children:ReactNode}) {
@@ -32,15 +30,16 @@ export default function MainHome({children}:{children:ReactNode}) {
     }
   }, [isError, error, router]);
  
-
   return (
-    <div className="flex items-center flex-col justify-items-center bg-zinc-100 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <Header />
-      <div className="w-full flex justify-start py-20">
+      <div className="flex pt-16 h-screen">
         <Sidebar />
-        <div className="w-full flex justify-center">
-        {children}
-        </div>
+        <main className="flex-1 lg:ml-64 h-full overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

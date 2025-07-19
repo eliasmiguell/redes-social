@@ -46,10 +46,10 @@ function SearchPage() {
     <div className="w-[60%] flex gap-6">
       <div className="flex flex-col gap-8 w-1/3 border-r p-4 items-center">
         <span className="font-semibold text-lg">Usuários</span>
-        {users.data?.map((user: IUser, id: number) => {
+        {users.data?.map((user: IUser) => {
           return (
-            <div className="w-full bg-white rounded-lg p-4 shadow-md" key={id}>
-              <Link href={`profile?id=${user?.id}`} key={id} className="flex items-center pb-2 gap-3">
+            <div className="w-full bg-white rounded-lg p-4 shadow-md" key={user.id}>
+              <Link href={`profile?id=${user?.id}`} className="flex items-center pb-2 gap-3">
                 <Image
                   src={user?.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
                   alt="Imagem do perfil"
@@ -66,8 +66,8 @@ function SearchPage() {
 
       <div className="flex flex-col gap-8 w-1/2 p-4 items-center">
         <span className="font-semibold text-lg">Posts</span>
-        {posts.data?.map((post: IPost, id: number) => {
-          return <Post post={post} key={id} />;
+        {posts.data?.map((post: IPost) => {
+          return <Post post={post} key={post.id} />;
         })}
       </div>
     </div>

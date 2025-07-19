@@ -7,9 +7,9 @@ import { useContext, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { IChat, INotification } from '@/interface';
 import { BsThreeDots } from "react-icons/bs";
+import { FaComments } from 'react-icons/fa';
 
 function ListConversations() {
-
   const [showMenu, setShowMenu] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const { user } = useContext(UserContext);
@@ -23,8 +23,6 @@ function ListConversations() {
       }),
     enabled: !!user?.id,
   });
-
-  
 
   const handleMenuToggle = (userId: number) => {
     if (selectedUserId === userId) {
@@ -47,118 +45,143 @@ function ListConversations() {
     },
   });
 
-  
-
   const GetNotification = useQuery<INotification[] | undefined>({
     queryKey: ['notification', user?.id],
     queryFn: () => makeRequest.get(`/notifications/?id_user=${user?.id}`).then((res) =>{return res.data.data} ),
     enabled: !!user?.id,
   });
 
-
-  // Agrupar mensagens por `sender_id` e armazenar `conversation_id`
-  const groupedNotifications = GetNotification.data?.reduce((acc, notification) => {
-    if (!acc[notification.sender_id]) {
-      acc[notification.sender_id] = {
-        sender_id: notification.sender_id,
-        username: notification.username,
-        userimg: notification.userimg,
-        conversations: new Set<number>(),
-        messagesCount: 0,
-      };
-    }
-
-    // Adicionar o `conversation_id` apenas se ainda não estiver na lista
-    acc[notification.sender_id].conversations.add(notification.conversations)
-
-    acc[notification.sender_id].messagesCount += 1;
-
-    return acc;
-  }, {} as Record<
-    string,
-    {
-      sender_id: number;
-      username: string;
-      userimg: string | null;
-      conversations: Set<number>;
-      messagesCount: number;
-    }
-  >) || {};
-
-  const groupedList = Object.values(groupedNotifications).map((group)=>({
-    ...group,
-    conversations:Array.from(group.conversations)
-  }));
+  // Remover duplicatas baseado no ID da conversa e garantir keys únicas
+  const uniqueConversations = data ? data
+    .filter((conversation: IChat) => conversation && conversation.id) // Filtrar dados válidos
+    .filter((conversation: IChat, index: number, self: IChat[]) => 
+      index === self.findIndex((c: IChat) => c.id === conversation.id)
+    )
+    .map((conversation: IChat, index: number) => ({
+      ...conversation,
+      uniqueKey: `conversation-${conversation.id}-${index}` // Garantir key única
+    })) : [];
  
   if (error) {
     console.log(error);
   }
 
-   if (GetNotification.error) {
+  if (GetNotification.error) {
     console.log(GetNotification.error);
   }
 
   if (deleteMutation.error) {
-    console.log(error);
+    console.log(deleteMutation.error);
   }
-  return (
-    <>    
-    <aside className='fixed w-1/4 sm:w-1/4 pl-4 py-20 '>
-      <div className="my-4">
-        <span className="font-semibold border-b  text-2xl whitespace-nowrap">Chat</span>
-      </div>
-      <nav className={`flex flex-col gap-1 text-gray-600 font-seminold`}>
-        {data?.map((users: IChat) => (
-          <div key={users?.id} className="flex gap-1 relative lg:flex-row items-center justify-between my-4">
-            <Link className="flex gap-1 items-center w-3/6" href={`/messagens/?conversationsId=${users?.id}`}>
-              <Image 
-                src={users?.other_userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
-                alt="Imagem do perfil"
-                className="w-25 h-25 sm:w-8 sm:h-8 rounded-full object-cover"
-                width={32}
-                height={32}
-                quality={100} 
-                unoptimized={true}
-              />
-              <span className="font-bold text-x hidden md:block">{users?.other_username}</span>
-              <span className='bg-zinc-100 ml-3 pb-2 hidden md:block' onClick={() => handleMenuToggle(users?.id)}>
-                <BsThreeDots />
-              </span>
-              {showMenu && selectedUserId === users.id && (
-                <div className='absolute flex-col  bg-white p-1 mb-10 shadow-md left-[150px] rounded-md border-t whitespace-nowrap'
-                  onMouseLeave={() => setShowMenu(false)}>
-                  <Link href='' onClick={() => deleteMutation.mutate({ conversation_id: users.id })}>
-                    Excluir conversa
-                  </Link>
-                </div>
-               
-              )}
-            </Link>
+
+  // Verificar se os dados são válidos
+  if (!data || !Array.isArray(data)) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <FaComments className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Chat</h2>
           </div>
-        ))}
-      </nav>
-    </aside>
-    {/* {groupedList.map((notific) => (
-      <Link href={`/messagens/?conversationsId=${notific.conversations.join(',')}`} key={notific.sender_id} className="flex flex-row lg:flex-row items-center justify-between my-2">
-        <div className="flex items-center w-full">
-          <Image 
-            src={notific.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
-            alt="Imagem do perfil"
-            className="w-8 h-8 rounded-full object-cover mr-2"
-            width={32}
-            height={32} 
-            quality={100} 
-            unoptimized={true}
-          />
-          <div>
-            <span className=" text-lg">{notific.username}</span>
-            <br />
-            <span className="font-bold text-sm">{notific.messagesCount} nova(s) mensagem(ns)</span>
+          <p className="text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Carregando conversas...</p>
           </div>
         </div>
-      </Link>
-    ))} */}
-    </>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header da lista de conversas */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+            <FaComments className="text-white text-xl" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">Chat</h2>
+        </div>
+        <p className="text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
+      </div>
+
+      {/* Lista de conversas */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4">
+          <nav className="space-y-2">
+            {uniqueConversations && uniqueConversations.length > 0 ? (
+              uniqueConversations.map((users: IChat & { uniqueKey: string }) => (
+                <div key={users.uniqueKey} className="relative">
+                  <Link 
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group" 
+                    href={`/messagens/?conversationsId=${users?.id}`}
+                  >
+                    <div className="relative">
+                      <Image 
+                        src={users?.other_userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                        alt="Imagem do perfil"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                        width={48}
+                        height={48}
+                        quality={100} 
+                        unoptimized={true}
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-800 truncate">{users?.other_username}</h3>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMenuToggle(users?.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-gray-200 transition-all"
+                        >
+                          <BsThreeDots className="text-gray-500" />
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-500">Online agora</p>
+                    </div>
+                  </Link>
+                  
+                  {showMenu && selectedUserId === users.id && (
+                    <div 
+                      className="absolute right-2 top-12 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10"
+                      onMouseLeave={() => setShowMenu(false)}
+                    >
+                      <button
+                        onClick={() => deleteMutation.mutate({ conversation_id: users.id })}
+                        className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm w-full"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Excluir conversa
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaComments className="text-gray-400 text-2xl" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Nenhuma conversa encontrada</h3>
+                <p className="text-gray-500">Comece uma conversa com seus amigos!</p>
+              </div>
+            )}
+          </nav>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,6 +1,4 @@
 'use client';
-import AuthInput from '@/components/AuthInput';
-
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useContext, useState } from 'react';
@@ -8,6 +6,7 @@ import { UserContext } from '@/context/UserContext';
 import { toast } from 'react-toastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { makeRequest } from '../../axios';
+
 
 function EditProfile() {
   const { user, setUser } = useContext(UserContext);
@@ -90,17 +89,88 @@ function EditProfile() {
           Editar Perfil
         </header>
         <form className="w-2/3 py-8 flex flex-col gap-8">
-          <AuthInput label="Nome:" newState={setUsername} />
-          <AuthInput label="Imagem do perfil (url):" newState={setUserimg} />
-          <AuthInput label="Imagem de fundo (url):" newState={setBgimg} />
+          <div className="flex flex-col justify-between items-start">
+            <label className="font-medium text-gray-700">Nome:</label>
+            <input 
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              className="border-gray-400 border-b w-full focus-visible:outline-none focus:border-blue-500 p-2" 
+            />
+          </div>
+          
+          <div className="flex flex-col justify-between items-start">
+            <label className="font-medium text-gray-700">Imagem do perfil (URL):</label>
+            <input 
+              type="text" 
+              value={userimg || ''} 
+              onChange={(e) => setUserimg(e.target.value)} 
+              placeholder="https://exemplo.com/imagem.jpg"
+              className="border-gray-400 border-b w-full focus-visible:outline-none focus:border-blue-500 p-2" 
+            />
+            <p className="text-xs text-gray-500 mt-1">Cole aqui o link direto da imagem (deve terminar em .jpg, .png, etc.)</p>
+            {userimg && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500 mb-1">Prévia:</p>
+                <img 
+                  src={userimg} 
+                  alt="Prévia da imagem de perfil" 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex flex-col justify-between items-start">
+            <label className="font-medium text-gray-700">Imagem de fundo (URL):</label>
+            <input 
+              type="text" 
+              value={bgimg || ''} 
+              onChange={(e) => setBgimg(e.target.value)} 
+              placeholder="https://exemplo.com/imagem-fundo.jpg"
+              className="border-gray-400 border-b w-full focus-visible:outline-none focus:border-blue-500 p-2" 
+            />
+            <p className="text-xs text-gray-500 mt-1">Cole aqui o link direto da imagem (deve terminar em .jpg, .png, etc.)</p>
+            {bgimg && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500 mb-1">Prévia:</p>
+                <img 
+                  src={bgimg} 
+                  alt="Prévia da imagem de fundo" 
+                  className="w-32 h-20 rounded-lg object-cover border-2 border-gray-200"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          
           <button
-            className={`w-1/2 py-2 font-semibold bg-zinc-300 hover:text-back self-center`}
+            className={`w-1/2 py-3 font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg self-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            disabled={!username.trim() || editeProfileMutation.isPending}
             onClick={(e) => {
               e.preventDefault();
-              editeProfileMutation.mutate({ username , userimg, bgimg, id:id });
+              if (!username.trim()) {
+                toast.error('Nome de usuário é obrigatório');
+                return;
+              }
+              console.log('Dados que serão enviados:', { username, userimg, bgimg, id });
+              console.log('URL da requisição:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/update-users`);
+              editeProfileMutation.mutate({ username, userimg, bgimg, id: id });
             }}
           >
-            SALVAR 
+            {editeProfileMutation.isPending ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Salvando...
+              </>
+            ) : (
+              'SALVAR'
+            )}
           </button>
         </form>
       </div>

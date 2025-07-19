@@ -6,9 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import Feed from '@/components/Feed';
 import { useContext, useState, MouseEvent } from 'react';
 import { UserContext } from '@/context/UserContext';
-import { IPost, IFriendship, IConversatio, IChat } from '@/interface'; 
+import { IPost, IFriendship, IChat } from '@/interface'; 
 import { FaTimesCircle } from 'react-icons/fa';
-import AuthInput from '@/components/AuthInput';
+import { FaUserFriends, FaComments, FaEdit } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { makeRequest } from '../../axios';
@@ -28,9 +28,7 @@ function Profile() {
   const id = userId && !isNaN(parseInt(userId)) ? parseInt(userId) : user?.id;
   const router = useRouter();
 
-  if (!id) {
-    return <div>Usuário não encontrado.</div>; // Evitar retornar antes de chamar os hooks
-  }
+ 
 
   // Consulta para pegar os dados do perfil
   const profileQuery = useQuery({
@@ -127,7 +125,7 @@ function Profile() {
 
   // Edita usuário
   const editeProfileMutation = useMutation({
-    mutationFn: async (data: {}) => {
+    mutationFn: async (data: { username: string; userimg: string; bgimg: string; id: number }) => {
       return await makeRequest
         .put(`/users/update-users`, data)
         .then((res) => {
@@ -192,74 +190,186 @@ function Profile() {
   if (friendQuery.error) {
     console.log(friendQuery.error);
   }
-
+  if (!id) {
+    return <div>Usuário não encontrado.</div>; // Evitar retornar antes de chamar os hooks
+  }
   return (
-    <div className="w-5/6 sm:w-3/5 flex flex-col items-center">
-      <div className="relative pt-4">
+    <div className="w-full max-w-6xl mx-auto p-6">
+      {/* Header do perfil */}
+      <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
+        {/* Imagem de fundo */}
+        <div className="relative h-64 bg-gradient-to-r from-blue-600 to-purple-600">
         <Image
           src={profileQuery.data?.bgimg
             ? profileQuery.data?.bgimg
             : 'https://www.biotecdermo.com.br/wp-content/uploads/2016/10/sem-imagem-10.jpg'}
-          className="rounded-xl" alt={''}   width={32}
+          className="rounded-xl" alt="Imagem de fundo do perfil"   width={32}
           layout="responsive" 
           quality={100} 
             unoptimized={true}
           height={32}      />
-        <div className="flex absolute items-center bottom-[-110px] left-10">
-          <Image
-            src={
-              profileQuery.data?.userimg
-                ? profileQuery.data?.userimg
-                : 'https://img.freepik.com/free-icon/user_318-159711.jpg'
-            }
-            alt="imagem do perfil"
-            className="w-40 h-40 rounded-full border-zinc-100 border-4"
-            width={32}
-            quality={100} 
+          {/* Botão de upload removido - usando apenas URLs */}
+          {/* {user?.id === id && (
+            <button
+              onClick={() => bgImageRef.current?.click()}
+              className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-3 rounded-full hover:bg-white/30 transition-colors"
+            >
+              <FaCamera className="text-white text-lg" />
+            </button>
+          )}
+          <input
+            ref={bgImageRef}
+            type="file"
+            accept="image/*"
+            onChange={handleBgImageChange}
+            className="hidden"
+          /> */}
+        </div>
+
+        {/* Informações do perfil */}
+        <div className="relative px-6 pb-6">
+          <div className="flex items-end -mt-20 mb-4">
+            <div className="relative">
+            <Image
+          src={profileQuery.data?.userimg
+            ? profileQuery.data?.userimg
+            : 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+          className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover" alt="Imagem do perfil"   width={128}
+          quality={100} 
             unoptimized={true}
-            height={32}
-          />
-          <span className="text-xl sm:text-lg md:text-xl lg:text-2xl font-bold pl-2">{profileQuery.data?.username}</span>
+          height={128}      />
+              {/* Botão de upload removido - usando apenas URLs */}
+              {/* {user?.id === id && (
+                <button
+                  onClick={() => profileImageRef.current?.click()}
+                  className="absolute bottom-2 right-2 bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                >
+                  <FaCamera className="text-white text-sm" />
+                </button>
+              )}
+              <input
+                ref={profileImageRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImageChange}
+                className="hidden"
+              /> */}
+            </div>
+            
+            <div className="ml-6 mb-4">
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">{profileQuery.data?.username}</h1>
+              <div className="flex items-center gap-4 text-gray-600">
+                <div className="flex items-center gap-2">
+                  <FaUserFriends className="text-blue-600" />
+                  <span>Seguidores</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaComments className="text-green-600" />
+                  <span>Posts</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botões de ação */}
+          <div className="flex gap-4">
+            {user?.id !== id ? (
+              <>
+                <button
+                  className={`px-6 py-3 rounded-full font-semibold transition-colors ${
+                    followed 
+                      ? 'bg-gray-200 text-gray-800 hover:bg-red-500 hover:text-white' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                  onClick={() => user && mutation.mutate({ follower_id: user.id, followed_id: id, followed })}
+                >
+                  {followed ? 'Deixar de seguir' : 'Seguir'}
+                </button>
+                <button
+                  className="px-6 py-3 bg-gray-100 text-gray-800 rounded-full font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                  onClick={() => chareCreateConvers()}
+                >
+                  <FaComments />
+                  Mensagem
+                </button>
+              </>
+            ) : (
+              <button
+                className="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                onClick={() => setEditProfile(true)}
+              >
+                <FaEdit />
+                Editar Perfil
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="pt-36 w-5/6 sm:w-3/6 flex flex-col items-center gap-4">
-        {user?.id !== id ? (
-          <div className="flex flex-row">
-            <button
-              className={`w-1/2 p-2 hover:bg-red-500 rounded-md font-semibold ${followed ? 'bg-zinc-300 hover:text-back' : 'bg-green-600 text-white hover:bg-green-700'}`}
-              onClick={() => user && mutation.mutate({ follower_id: user.id, followed_id: id, followed })}
-            >
-              {followed ? 'Deixar de seguir' : 'Seguir'}
-            </button>
-            <button
-              className="bg-zinc-300 rounded-md font-semibold hover:bg-blue-500 ml-2 p-4"
-              onClick={() => chareCreateConvers()}
-            >
-              Mensagem
-            </button>
-          </div>
-        ) : (
-          <button
-            className="w-1/2 py-2 font-semibold bg-zinc-300 hover:text-back"
-            onClick={() => setEditProfile(true)}
-          >
-            Editar Perfil
-          </button>
-        )}
-        {editProfile && (
-          <div className="fixed top-0 bottom-0 right-0 left-0 bg-[#00000094] z-10 flex items-center justify-center">
-            <div className="bg-white w-2/3 rounded-xl flex flex-col items-center">
-              <header className="w-full border-b font-semibold text-lg text-zinc-600 flex justify-between items-center p-2">
-                Editar Perfil
-                <button>
-                  <FaTimesCircle className="text-red-600" onClick={() => setEditProfile(false)} />
+      {/* Modal de edição */}
+      {editProfile && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-800">Editar Perfil</h2>
+              <button
+                onClick={() => setEditProfile(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <FaTimesCircle className="text-gray-500 text-xl" />
+              </button>
+            </div>
+            
+            <form className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nome de usuário
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Digite seu nome de usuário"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Imagem de perfil (URL)
+                </label>
+                <input
+                  type="text"
+                  value={userimg}
+                  onChange={(e) => setUserimg(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                />
+                <p className="text-xs text-gray-500 mt-1">Cole aqui o link direto da imagem</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Imagem de fundo (URL)
+                </label>
+                <input
+                  type="text"
+                  value={bgimg}
+                  onChange={(e) => setBgimg(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://exemplo.com/imagem-fundo.jpg"
+                />
+                <p className="text-xs text-gray-500 mt-1">Cole aqui o link direto da imagem</p>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditProfile(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
                 </button>
-              </header>
-              <form className="w-2/3 py-8 flex flex-col gap-8">
-                <AuthInput label="Nome:"  newState={setUsername} />
-                <AuthInput label="Imagem do perfil (url):" newState={setUserimg} />
-                <AuthInput label="Imagem de fundo (url):" newState={setBgimg} />
                 <button
                   className="w-1/2 py-2 font-semibold bg-zinc-300 hover:text-back self-center"
                   onClick={(e:MouseEvent<HTMLButtonElement>) => {
@@ -269,10 +379,14 @@ function Profile() {
                 >
                   SALVAR
                 </button>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Feed de posts */}
+      <div className="mt-8">
         <Feed post={postQuery.data} />
       </div>
     </div>
