@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Feed from '@/components/Feed';
 import { useContext, useState, MouseEvent } from 'react';
 import { UserContext } from '@/context/UserContext';
-import { IPost, IChat } from '@/interface'; 
+import { IPost, IChat, IFriendship } from '@/interface'; 
 import { FaTimesCircle } from 'react-icons/fa';
 import { FaUserFriends, FaComments, FaEdit } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,7 @@ import { makeRequest } from '../../axios';
 
 function Profile() {
   const { user, setUser } = useContext(UserContext);
-  const [followed, setFollowed] = useState(false);
+  const [friendshipStatus, setFriendshipStatus] = useState<'pending' | 'accepted' | 'rejected' | null>(null);
   const [existConvers, setExistConvers] = useState(false);
   const [idexistConvers, setIdExistConvers] = useState(0);
   const [username, setUsername] = useState('');
@@ -56,15 +56,18 @@ function Profile() {
     queryFn: async () => {
       const res = await makeRequest.get(`friendship/status?follower_id=${user?.id}&followed_id=${id}`);
       const status = res.data.status;
-      if (status === 'accepted') {
-        setFollowed(true);
-      } else {
-        setFollowed(false);
-      }
+      setFriendshipStatus(status);
       return status;
     }, 
     enabled: !!id && !!user?.id && user?.id !== id
   });
+
+  const GetFriends = useQuery<IFriendship[] | undefined>({
+    queryKey: ['friendship-accepted', user?.id],
+    queryFn: () => makeRequest.get(`friendship/accepted?follower_id=${user?.id}`).then((res) => res.data.data),
+    enabled: !!user?.id,
+  });
+
 
   // Mutação para enviar solicitação de amizade
   const sendRequestMutation = useMutation({
@@ -98,7 +101,6 @@ function Profile() {
       return makeRequest
         .delete(`/friendship/?follower_id=${unfollow.follower_id}&followed_id=${unfollow.followed_id}`)
         .then((res) => {
-          setFollowed(false);
           return res.data;
         });
     },
@@ -111,25 +113,30 @@ function Profile() {
   });
 
   
-  // Filtra o id da conversa se existe ou não 
+  // Verifica se existe conversa entre o usuário logado e o usuário do perfil
   const existConversation = useQuery({
-    queryKey: ['chat', user?.id],
-    queryFn: async () => await await makeRequest.get(`/conversation/?userid=${user?.id}`)
-     .then((res)=>{
-      return res.data.data.map((e:IChat)=> {
-        if(e.id === user?.id){
-          setIdExistConvers(e.id); 
-          setExistConvers(true); 
-          return true
-        }else{
-          setExistConvers(false);
-          setIdExistConvers(e.id);
-        }
-
-        return res.data.data
-      })
-     }),
-    enabled: !!user?.id,
+    queryKey: ['chat', user?.id, id],
+    queryFn: async () => {
+      const res = await makeRequest.get(`/conversation/?userid=${user?.id}`);
+      const conversations = res.data.data;
+      
+      // Procura por uma conversa que envolva o usuário do perfil
+      const conversationWithProfileUser = conversations.find((conv: IChat) => {
+        // Verifica se a conversa envolve o usuário do perfil (id)
+        return conv.other_user_id === id;
+      });
+      
+      if (conversationWithProfileUser) {
+        setExistConvers(true);
+        setIdExistConvers(conversationWithProfileUser.id);
+        return conversationWithProfileUser;
+      } else {
+        setExistConvers(false);
+        setIdExistConvers(0);
+        return null;
+      }
+    },
+    enabled: !!user?.id && !!id && user?.id !== id && friendshipStatus === 'accepted', // Só executa se não for o próprio perfil e se são amigos
   });
   
 
@@ -162,11 +169,13 @@ function Profile() {
     mutationFn: async (creacteConv: { user1_id: number, user2_id: number }) => 
       await makeRequest.post(`/conversation/`, { user1_id: creacteConv.user1_id, user2_id: creacteConv.user2_id })
         .then((res) => {
-          return res.data.data;
+          return res.data;
         }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chat", id] });
-      router.push(`messagens/?conversationsId=${idexistConvers}`);
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["chat", user?.id, id] });
+      // Usa o ID da conversa criada para redirecionar
+      const conversationId = data.conversationId;
+      router.push(`/messagens/?conversationsId=${conversationId}`);
     },
     onError: (error) => {
       console.log(error);
@@ -174,7 +183,13 @@ function Profile() {
   });
 
   const chareCreateConvers = async () => {
-    if (existConvers) {
+    // Verifica se o usuário está tentando enviar mensagem para si mesmo
+    if (user?.id === id) {
+      console.log('Não é possível enviar mensagem para si mesmo');
+      return;
+    }
+    
+    if (existConvers && idexistConvers > 0) {
       router.push(`/messagens/?conversationsId=${idexistConvers}`);
       return;
     } else {
@@ -212,11 +227,18 @@ function Profile() {
         {profileQuery.data?.bgimg ? <Image
           src={profileQuery.data?.bgimg.includes('http') ? profileQuery.data?.bgimg : `https://api-redes-sociais.onrender.com/uploads/${profileQuery.data?.bgimg}`}
             alt="Imagem de fundo do perfil"
-          className="rounded-xl"   width={32}
+          className="rounded-xl object-cover"   width={32}
           layout="responsive" 
           quality={100} 
             unoptimized={true}
-          height={32}      /> : <Image src={"https://www.biotecdermo.com.br/wp-content/uploads/2016/10/sem-imagem-10.jpg"} alt="Imagem de fundo do perfil" width={32} height={32} quality={100} unoptimized={true}/>}
+          height={32}      /> :  <Image
+          src="https://www.dci.com.br/wp-content/uploads/2020/09/perfil-sem-foto-1024x655.jpg"
+          alt="Imagem de fundo do perfil"
+          fill
+          quality={100}
+          unoptimized
+          style={{ objectFit: 'cover' }} // ou 'contain', dependendo do efeito que deseja
+        />}
           {/* Botão de upload removido - usando apenas URLs */}
           {/* {user?.id === id && (
             <button
@@ -268,11 +290,11 @@ function Profile() {
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2">
                   <FaUserFriends className="text-blue-600" />
-                  <span>Seguidores</span>
+                  <span>Seguidores {GetFriends.data?.length ? GetFriends.data?.length : 0}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaComments className="text-green-600" />
-                  <span>Posts</span>
+                  <span>Posts {postQuery.data?.length ? postQuery.data?.length : 0}</span>
                 </div>
               </div>
             </div>
@@ -284,29 +306,39 @@ function Profile() {
               <>
                 <button
                   className={`px-6 py-3 rounded-full font-semibold transition-colors ${
-                    followed 
+                    friendshipStatus === 'accepted'
                       ? 'bg-gray-200 text-gray-800 hover:bg-red-500 hover:text-white' 
+                      : friendshipStatus === 'pending'
+                      ? 'bg-yellow-500 text-white cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                   onClick={() => {
-                    if (user) {
-                      if (followed) {
+                    if (user && friendshipStatus !== 'pending') {
+                      if (friendshipStatus === 'accepted') {
                         unfollowMutation.mutate({ follower_id: user.id, followed_id: id });
                       } else {
                         sendRequestMutation.mutate({ follower_id: user.id, followed_id: id });
                       }
                     }
                   }}
+                  disabled={friendshipStatus === 'pending'}
                 >
-                  {followed ? 'Deixar de seguir' : 'Seguir'}
+                  {friendshipStatus === 'accepted' 
+                    ? 'Deixar de seguir' 
+                    : friendshipStatus === 'pending'
+                    ? 'Solicitação enviada'
+                    : 'Seguir'
+                  }
                 </button>
-                <button
-                  className="px-6 py-3 bg-gray-100 text-gray-800 rounded-full font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
-                  onClick={() => chareCreateConvers()}
-                >
-                  <FaComments />
-                  Mensagem
-                </button>
+                {user?.id !== id && (
+                  <button
+                    className="px-6 py-3 bg-gray-100 text-gray-800 rounded-full font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                    onClick={() => chareCreateConvers()}
+                  >
+                    <FaComments />
+                    Mensagem
+                  </button>
+                )}
               </>
             ) : (
               <button

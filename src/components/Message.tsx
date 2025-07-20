@@ -6,13 +6,16 @@ import { IMessage, IUser, getValidImageUrl } from '@/interface';
 import { makeRequest } from '../../axios';
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
-import { FaTimesCircle } from 'react-icons/fa';
+import { FaTimesCircle, FaComments } from 'react-icons/fa';
 import { FaCheckDouble } from "react-icons/fa6";
 import { BsThreeDots } from 'react-icons/bs';
 import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import moment from 'moment';
 import 'moment/locale/pt-br';
+
+// Configurar moment para português brasileiro
+moment.locale('pt-br');
 
 function Message() {
   const { user } = useContext(UserContext);
@@ -86,6 +89,22 @@ function Message() {
     },
   });
 
+  // Marcar notificações de mensagem como lidas quando abrir a conversa
+  const markMessageNotificationsAsRead = useMutation({
+    mutationFn: async () => {
+      // Marcar notificações de mensagem como lidas para esta conversa específica
+      await makeRequest.patch('/notifications/mark-message-read', { 
+        user_id: user?.id,
+        conversation_id: id 
+      });
+      return true;
+    },
+    onSuccess: () => {
+      // Invalidar queries de notificação para atualizar os contadores
+      queryClient.invalidateQueries({ queryKey: ['notification', user?.id] });
+    },
+  });
+
   const handleMenuToggle = (userId: number) => {
     if (selectedUserId === userId) {
       setShowMenu(!showMenu);
@@ -98,26 +117,52 @@ function Message() {
 
   const markAllMessagesAsReadMutation = useMutation({
     mutationFn: async (data: { conversation_id: number; user_id: number }) => {
-      return await makeRequest
-        .patch(`/messagens/update?conversation_id=${data.conversation_id}&user_id=${data.user_id}`)
-        .then((res) =>{return res.data});
+      try {
+        const response = await makeRequest
+          .patch(`/messagens/update?conversation_id=${data.conversation_id}&user_id=${data.user_id}`);
+        return response.data;
+      } catch (error) {
+        // Se for um erro de rede, não falha a mutação
+        const errorMessage = String(error);
+        if (errorMessage.includes('Network Error') || errorMessage.includes('ERR_NETWORK')) {
+          console.log('Erro de rede detectado, tentando novamente...');
+          return null; // Retorna null para não falhar a mutação
+        }
+        throw error; // Re-throw outros erros
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', id] });
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['messages', id] });
+      }
     },
     onError: (error) => {
-      console.log('Erro ao marcar mensagens como lidas:', error);
+      console.error('Erro ao marcar mensagens como lidas:', error);
+      // Log simples para debug
+      console.log('Tentando novamente em breve...');
     },
   });
   
   useEffect(() => {
-    if (id && user?.id) {
-      markAllMessagesAsReadMutation.mutate({
-        conversation_id: Number(id),
-        user_id: Number(user?.id),
-      });
+    if (id && user?.id && !markAllMessagesAsReadMutation.isPending && messgeQuery.data) {
+      // Verifica se há mensagens não lidas antes de fazer a requisição
+      const hasUnreadMessages = messgeQuery.data.some(
+        (message: IMessage) => message.recipient_id === user?.id && !message.is_read
+      );
+      
+      if (hasUnreadMessages) {
+        // Debounce para evitar múltiplas requisições
+        const timeoutId = setTimeout(() => {
+          markAllMessagesAsReadMutation.mutate({
+            conversation_id: Number(id),
+            user_id: Number(user?.id),
+          });
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+      }
     }
-  }, [id, user?.id, markAllMessagesAsReadMutation]);
+  }, [id, user?.id, messgeQuery.data]);
 
   const querMessages = useQuery({
     queryKey: ['messages', id],
@@ -134,6 +179,29 @@ function Message() {
   }
   if (userConversaQuery.error) {
     console.log(userConversaQuery.error);
+  }
+
+  // Marcar notificações como lidas quando a conversa for carregada
+  useEffect(() => {
+    if (id && user?.id && messgeQuery.data && messgeQuery.data.length > 0) {
+      // Marcar notificações de mensagem como lidas
+      markMessageNotificationsAsRead.mutate();
+    }
+  }, [id, user?.id, messgeQuery.data]);
+
+  // Verificar se a conversa é válida
+  if (!id || id === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FaComments className="text-gray-400 text-2xl" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Conversa não encontrada</h3>
+          <p className="text-gray-500">Selecione uma conversa válida para começar a trocar mensagens.</p>
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -174,80 +242,124 @@ function Message() {
               {messgeQuery.data.map((message: IMessage, index: number) => {
                 const showImage = index === 0 || messgeQuery.data[index - 1]?.sender_id !== message.sender_id;
                 const isUserMessage = message.sender_id === user?.id;
+                
+                // Formatar a hora corretamente
+                const formatMessageTime = (timestamp: number) => {
+                  try {
+                    const messageTime = moment.unix(timestamp);
+                    const now = moment();
+                    
+                    // Se for hoje, mostra apenas a hora
+                    if (messageTime.isSame(now, 'day')) {
+                      return messageTime.format('HH:mm');
+                    }
+                    // Se for ontem, mostra "ontem" + hora
+                    else if (messageTime.isSame(now.clone().subtract(1, 'day'), 'day')) {
+                      return `ontem ${messageTime.format('HH:mm')}`;
+                    }
+                    // Se for mais antigo, mostra a data completa
+                    else {
+                      return messageTime.format('DD/MM HH:mm');
+                    }
+                  } catch (error) {
+                    console.error('Erro ao formatar hora:', error);
+                    return '--:--';
+                  }
+                };
+                
+                const formattedTime = formatMessageTime(message.sent_at);
+                
                 return (
                   <div 
                     key={message.id} 
                     className={`flex gap-2 md:gap-3 items-start ${isUserMessage ? 'justify-end' : 'justify-start'}`}
                   >
+                    {/* Avatar do outro usuário (esquerda) */}
                     {showImage && !isUserMessage && (
-                      <Link href={`/profile?id=${idUserConversa?.id}`}>
-                        <Image
-                          src={getValidImageUrl(message?.userimg)}
-                          alt="Imagem do perfil"
-                          className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover flex-shrink-0"
-                          width={32}
-                          height={32}
-                          quality={100} 
-                          unoptimized={true}
-                        />
-                      </Link>
+                      <div className="flex-shrink-0">
+                        <Link href={`/profile?id=${idUserConversa?.id}`}>
+                          <Image
+                            src={getValidImageUrl(message?.userimg)}
+                            alt="Imagem do perfil"
+                            className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
+                            width={32}
+                            height={32}
+                            quality={100} 
+                            unoptimized={true}
+                          />
+                        </Link>
+                      </div>
                     )}
                     
-                    <div className={`relative max-w-[70%] sm:max-w-xs lg:max-w-md ${isUserMessage ? 'order-2' : 'order-1'}`}>
-                      <div className={`p-2 md:p-3 rounded-2xl text-xs md:text-sm ${
+                    {/* Mensagem */}
+                    <div className={`relative max-w-[70%] sm:max-w-xs lg:max-w-md ${
+                      isUserMessage ? 'order-2' : 'order-1'
+                    }`}>
+                      <div className={`p-3 md:p-4 rounded-2xl text-sm md:text-base shadow-sm ${
                         isUserMessage 
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-                          : 'bg-white text-gray-800 shadow-sm border border-gray-200'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md ml-auto' 
+                          : `bg-gray-100 text-gray-800 border border-gray-200 rounded-bl-md ${
+                              !isUserMessage && !message.is_read ? 'border-blue-300 bg-blue-50' : ''
+                            }`
                       }`}>
-                        <p className="break-words leading-relaxed">{message?.messages}</p>
+                        <p className="break-words leading-relaxed mb-2">{message?.messages}</p>
                         
-                        <div className="flex items-center justify-between mt-1 md:mt-2 text-xs opacity-70">
-                          <span className="text-xs">{moment(message.sent_at).local().fromNow()}</span>
-                          <div className="flex items-center gap-1">
-                            {message.is_read ? (
-                              <FaCheckDouble className="text-blue-300 text-xs" />
-                            ) : (
-                              <FaCheck className="text-gray-400 text-xs" />
-                            )}
-                          </div>
+                        <div className={`flex items-center justify-between text-xs ${
+                          isUserMessage ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          <span className="font-medium">{formattedTime}</span>
+                          {isUserMessage && (
+                            <div className="flex items-center gap-1">
+                              {message.is_read ? (
+                                <FaCheckDouble className="text-blue-200 text-xs" title="Lida" />
+                              ) : (
+                                <FaCheck className="text-blue-200 text-xs" title="Enviada" />
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       
-                      {/* Menu de opções */}
-                      <div className="absolute top-1 right-1">
-                        <button
-                          onClick={() => handleMenuToggle(message.id)}
-                          className="p-1 rounded-full hover:bg-black/10 transition-colors"
-                        >
-                          <BsThreeDots className="text-xs" />
-                        </button>
-                        
-                        {showMenu && selectedUserId === message.id && (
-                          <div className="absolute right-0 top-6 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10 min-w-[120px]">
-                            <button
-                              onClick={() => deleteMessageMutation.mutate({ message_id: message.id })}
-                              className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm w-full"
-                            >
-                              <FaTimesCircle className="text-xs" />
-                              Excluir
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      {/* Menu de opções (apenas para mensagens do usuário) */}
+                      {isUserMessage && (
+                        <div className="absolute top-1 right-1">
+                          <button
+                            onClick={() => handleMenuToggle(message.id)}
+                            className="p-1 rounded-full hover:bg-black/10 transition-colors"
+                          >
+                            <BsThreeDots className="text-xs text-white" />
+                          </button>
+                          
+                          {showMenu && selectedUserId === message.id && (
+                            <div className="absolute right-0 top-6 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10 min-w-[120px]">
+                              <button
+                                onClick={() => deleteMessageMutation.mutate({ message_id: message.id })}
+                                className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm w-full"
+                              >
+                                <FaTimesCircle className="text-xs" />
+                                Excluir
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
+                    {/* Avatar do usuário logado (direita) */}
                     {showImage && isUserMessage && (
-                      <Link href={`/profile?id=${user?.id}`}>
-                        <Image
-                          src={getValidImageUrl(message?.userimg)}
-                          alt="Imagem do perfil"
-                          className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover flex-shrink-0"
-                          width={32}
-                          height={32}
-                          quality={100} 
-                          unoptimized={true}
-                        />
-                      </Link>
+                      <div className="flex-shrink-0">
+                        <Link href={`/profile?id=${user?.id}`}>
+                          <Image
+                            src={getValidImageUrl(message?.userimg)}
+                            alt="Imagem do perfil"
+                            className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
+                            width={32}
+                            height={32}
+                            quality={100} 
+                            unoptimized={true}
+                          />
+                        </Link>
+                      </div>
                     )}
                   </div>
                 );

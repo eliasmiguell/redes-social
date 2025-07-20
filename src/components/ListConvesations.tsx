@@ -52,7 +52,7 @@ function ListConversations({ onClose, isMobile }: ListConversationsProps) {
 
   const GetNotification = useQuery<INotification[] | undefined>({
     queryKey: ['notification', user?.id],
-    queryFn: () => makeRequest.get(`/notifications/?id_user=${user?.id}`).then((res) =>{return res.data.data} ),
+    queryFn: () => makeRequest.get(`/notifications/?user_id=${user?.id}`).then((res) =>{return res.data.data} ),
     enabled: !!user?.id,
   });
 
@@ -201,7 +201,12 @@ function ListConversations({ onClose, isMobile }: ListConversationsProps) {
                   <FaComments className="text-gray-400 text-xl md:text-2xl" />
                 </div>
                 <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">Nenhuma conversa encontrada</h3>
-                <p className="text-sm md:text-base text-gray-500">Comece uma conversa com seus amigos!</p>
+                <p className="text-sm md:text-base text-gray-500 mb-4">Você só pode conversar com pessoas que você segue.</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-700">
+                    💡 <strong>Dica:</strong> Siga algumas pessoas primeiro para poder trocar mensagens com elas!
+                  </p>
+                </div>
               </div>
             )}
           </nav>

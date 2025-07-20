@@ -56,6 +56,7 @@ export interface INotification{
   id:number,
   other_username: string;
   other_userimg: string;
+  other_user_id: number; // ID do outro usuário na conversa
  }
 
 
@@ -64,7 +65,7 @@ export interface INotification{
   username: string,
   userimg:string,
   messages:string,
-  sent_at:number,
+  sent_at:number, // Timestamp em segundos desde epoch
   is_read:boolean
   sender_id:number,
   recipient_id:number

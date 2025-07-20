@@ -4,12 +4,13 @@ import Image from 'next/image';
 import { useContext, useState, useEffect } from 'react';
 import { FaSearch, FaBell, FaUserFriends, FaFacebookMessenger } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { HiChevronDown } from "react-icons/hi";
 import { makeRequest } from '../../axios';
 import { IoLogOut } from "react-icons/io5";
 import { UserContext } from '@/context/UserContext';
 import { INotification, IUser } from '@/interface';
+import { toast } from 'react-toastify';
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
@@ -19,16 +20,42 @@ function Header() {
   const [search, setSearch] = useState<string | null>(null);
   const [isMobile, SetIsMobile] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async () => {
       return await makeRequest.post("auth/logout").then((res) => res.data);
     },
     onSuccess: () => {
+      // Limpar o contexto do usuário
+      setUser(undefined);
+      
+      // Limpar o localStorage
+      localStorage.removeItem("rede-social:user");
+      
+      // Limpar o cache do React Query
+      queryClient.clear();
+      
+      // Mostrar mensagem de sucesso
+      toast.success('Logout realizado com sucesso!');
+      
+      // Redirecionar para a página de login
+      router.push('/login');
+      
+      // Forçar um reload da página para garantir que todos os estados sejam limpos
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 100);
+    },
+    onError: (error) => {
+      console.error('Erro no logout:', error);
+      // Mesmo com erro, limpar os dados locais
       setUser(undefined);
       localStorage.removeItem("rede-social:user");
-      router.push('login');
-    },
+      queryClient.clear();
+      toast.error('Erro ao fazer logout, mas você foi desconectado.');
+      router.push('/login');
+    }
   });
   
   useEffect(() => {
