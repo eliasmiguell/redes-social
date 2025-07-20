@@ -27,10 +27,18 @@ function Login() {
     
     try {
       const res = await makeRequest.post('auth/login', { email, password });
-      localStorage.setItem("rede-social:user", JSON.stringify(res.data.user));
+      
+      // Atualizar o contexto do usuário (isso também salva no localStorage)
       setUser(res.data.user);
+      
+      // Mostrar mensagem de sucesso
       toast.success('Login realizado com sucesso!');
-      router.push('/main');
+      
+      // Aguardar um pouco para garantir que o contexto foi atualizado
+      setTimeout(() => {
+        router.push('/main');
+      }, 100);
+      
     } catch (err: unknown) {
       const errorMessage = err && typeof err === 'object' && 'response' in err 
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message 

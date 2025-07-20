@@ -1,33 +1,26 @@
 "use client"; 
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
 import { FaUsers, FaHeart, FaComments, FaShare, FaMobile, FaShieldAlt } from 'react-icons/fa';
+import { UserContext } from '@/context/UserContext';
 
 export default function Home() {
   const router = useRouter();
+  const { user, isInitialized } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Verifica se o usuário está logado
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/refresh', {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          router.push('/main');
-        } else {
-          setIsLoading(false);
-        }
-      } catch {
+    // Aguarda o contexto ser inicializado antes de verificar o usuário
+    if (isInitialized) {
+      if (user) {
+        router.push('/main');
+      } else {
         setIsLoading(false);
       }
-    };
-    
-    checkAuth();
-  }, [router]);
+    }
+  }, [user, isInitialized, router]);
 
   if (isLoading) {
     return (

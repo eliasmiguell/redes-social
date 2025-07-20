@@ -13,13 +13,12 @@ function FriendshipTable() {
   const { user } = useContext(UserContext);
   const queryClient = useQueryClient();
 
-  // Pega os amigos
+  // Pega os amigos aceitos
   const GetFriends = useQuery<IFriendship[] | undefined>({
-    queryKey: ['friendship', user?.id],
-    queryFn: () => makeRequest.get(`friendship/?follower_id=${user?.id}`).then((res) => res.data.data),
+    queryKey: ['friendship-accepted', user?.id],
+    queryFn: () => makeRequest.get(`friendship/accepted?follower_id=${user?.id}`).then((res) => res.data.data),
     enabled: !!user?.id,
   });
-
 
   // Mutação para parar de seguir
   const mutation = useMutation({
@@ -28,7 +27,7 @@ function FriendshipTable() {
         .delete(`/friendship/?follower_id=${paraDeSeguir.follower_id}&followed_id=${paraDeSeguir.followed_id}`)
         .then((res) => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendship', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friendship-accepted', user?.id] });
     },
   });
 

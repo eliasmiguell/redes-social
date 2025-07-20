@@ -55,28 +55,46 @@ interface UserData {
 interface UserContextType {
   user: UserData | undefined;
   setUser: (newState: UserData | undefined) => void;
+  isInitialized: boolean;
 }
 
 const initialValue: UserContextType = {
   user: undefined,
   setUser: () => {},
+  isInitialized: false,
 };
 
 export const UserContext = createContext<UserContextType>(initialValue);
 
 export const UserContextProvider = ({ children }: ContextProps) => {
   const [user, setUser] = useState<UserData | undefined>(undefined);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   useEffect(() => {
-      const UserJSON = localStorage.getItem("rede-social:user");
-      if (UserJSON) {
-        setUser(JSON.parse(UserJSON));
+    const UserJSON = localStorage.getItem("rede-social:user");
+    if (UserJSON) {
+      try {
+        const userData = JSON.parse(UserJSON);
+        setUser(userData);
+      } catch (error) {
+        console.error('Erro ao parsear dados do usuário:', error);
+        localStorage.removeItem("rede-social:user");
       }
-   
+    }
+    setIsInitialized(true);
   }, []); // O useEffect executa uma vez, após o componente ser montado
 
+  const setUserWithStorage = (newUser: UserData | undefined) => {
+    if (newUser) {
+      localStorage.setItem("rede-social:user", JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem("rede-social:user");
+    }
+    setUser(newUser);
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser: setUserWithStorage, isInitialized }}>
       {children}
     </UserContext.Provider>
   );
