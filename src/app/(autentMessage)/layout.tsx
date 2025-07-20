@@ -1,11 +1,12 @@
 "use client"; 
 import Header from '@/components/Header';
 import ListConversations from '@/components/ListConvesations';
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, Suspense } from 'react';
 import { FaComments, FaArrowLeft } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function MainMessage({children}:{children:ReactNode}) {
+// Componente interno que usa useSearchParams
+function MessageLayoutContent({ children }: { children: ReactNode }) {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -109,5 +110,20 @@ export default function MainMessage({children}:{children:ReactNode}) {
         </div>
       </div>
     </div>
+  );
+}
+
+// Componente principal do layout com Suspense
+export default function MainMessage({children}:{children:ReactNode}) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <MessageLayoutContent>
+        {children}
+      </MessageLayoutContent>
+    </Suspense>
   );
 }
