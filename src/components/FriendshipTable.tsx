@@ -71,15 +71,15 @@ function FriendshipTable() {
                   href={`/profile?id=${friendship.followed_id}`}
                 >
                   <div className="relative">
-                    <Image
-                      src={friendship?.userimg ? friendship?.userimg : 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+                    {friendship?.userimg ? <Image
+                      src={friendship?.userimg.includes('http') ? friendship?.userimg : `https://api-redes-sociais.onrender.com/uploads/${friendship?.userimg}`}
                       alt="Imagem do perfil"
                       className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                       quality={100} 
                       unoptimized={true}
                       width={48}
                       height={48}
-                    />
+                    /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" width={48} height={48} quality={100} unoptimized={true}/>}
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                   </div>
                   <div className="flex-1">

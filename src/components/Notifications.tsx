@@ -97,15 +97,15 @@ function Notification() {
               >
                 <div className="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200">
                   <div className="relative">
-                    <Image 
-                      src={notific.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+                    {notific.userimg ? <Image 
+                      src={notific.userimg.includes('http') ? notific.userimg : `https://api-redes-sociais.onrender.com/uploads/${notific.userimg}`}
                       alt="Imagem do perfil"
                       className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                       width={48}
                       height={48}
                       quality={100} 
                       unoptimized={true}
-                    />
+                    /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" width={48} height={48} quality={100} unoptimized={true}/>}
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
                       <span className="text-white text-xs font-bold">{notific.messagesCount}</span>
                     </div>

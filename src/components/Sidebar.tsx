@@ -68,15 +68,15 @@ function Sidebar() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors" 
             href={`/profile?id=${id}`}
           >
-            <Image
-              src={user?.userimg ? user?.userimg : 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+            {user?.userimg ? <Image
+              src={user?.userimg.includes('http') ? user?.userimg : `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
               alt="Imagem do perfil"
               className="w-10 h-10 rounded-full object-cover"
               width={40}
               height={40}
               quality={100} 
               unoptimized={true}
-            />
+            /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-10 h-10 rounded-full object-cover" width={40} height={40} quality={100} unoptimized={true}/>}
             <div>
               <span className="font-semibold text-gray-800">{user?.username}</span>
               <p className="text-sm text-gray-500">Ver perfil</p>

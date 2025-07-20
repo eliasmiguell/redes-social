@@ -145,15 +145,15 @@ function Message() {
             <div key={res?.id} className="flex items-center gap-2 md:gap-3">
               <Link href={`/profile?id=${res?.id}`} className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
                 <div className="relative">
-                  <Image
-                    src={getValidImageUrl(res?.userimg)}
+                  {res?.userimg ? <Image
+                    src={res?.userimg.includes('http') ? res?.userimg : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${res?.userimg}`}
                     alt="Imagem do perfil"
                     className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white shadow-sm"
                     width={40}
                     height={40}
                     quality={100} 
                     unoptimized={true}
-                  />
+                  /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white shadow-sm" width={40} height={40} quality={100} unoptimized={true}/>}
                   <div className="absolute -bottom-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div>

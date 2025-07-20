@@ -27,15 +27,11 @@ function Post(props:{post:IPost}) {
   const LikesQuery= useQuery<ILikes[] | undefined>({
     queryKey:['likes', id], 
     queryFn:()=> makeRequest.get(`like/?likes_postid=${id}`).then((res)=>{
-      return res.data.data.map((like: ILikes)=> {
-        if(like.likes_userid === user?.id){
-          return setLiked(true)
-        }else{
-          setLiked(false)
-        }
-
-        return res.data.data
-      })
+      const likes = res.data.data;
+      // Verificar se o usuário atual curtiu o post
+      const userLiked = likes.some((like: ILikes) => like.likes_userid === user?.id);
+      setLiked(userLiked);
+      return likes;
     }),
     enabled: !! id
    })
@@ -103,13 +99,19 @@ if(comentQuery.error){
     <div className='w-full bg-white rounded-lg p-4 shadow-md'>
         <header className='flex gap-2 pb-4 border-b items-center'>
           <Link href={`/profile?id=${userid}`} className='flex gap-2'>
-          <Image
-           src={userimg? userimg:"https://img.freepik.com/free-icon/user_318-159711.jpg"}
+          {userimg ? <Image
+           src={userimg.includes('http') ? userimg : `https://api-redes-sociais.onrender.com/uploads/${userimg}`}
             alt="imagem do perfil " className='w-8 h-8 rounded-full'  width={32}
             height={32}
             quality={100} 
             unoptimized={true}
-            />
+            /> : <Image
+            src="https://img.freepik.com/free-icon/user_318-159711.jpg"
+            alt="imagem do perfil " className='w-8 h-8 rounded-full'  width={32}
+            height={32}
+            quality={100} 
+            unoptimized={true}
+            />}
             <div className=' flex flex-col'>
               <span className='font-semibold'>{username}</span>
               <span className='text-xs'>{moment(created_at).local().fromNow()}</span>
@@ -121,7 +123,7 @@ if(comentQuery.error){
           <div className='py-4 w-full'>
             <span >{post_desc}</span>
           </div>)}
-          {img && <Image src={`${img}`} alt='imagem do post'className='rounded-lg'  width={400}
+          {img && img.trim() !== '' && <Image src={ img.includes('http') ? img : `https://api-redes-sociais.onrender.com/uploads/${img}` } alt='imagem do post'className='rounded-lg'  width={400}
           layout="responsive" 
           quality={100} 
             unoptimized={true}
@@ -132,7 +134,7 @@ if(comentQuery.error){
                   className="relative">
                 {LikesQuery.data && LikesQuery.data.length > 0 && (
                   <>
-                  <div className='flex gap-1 items-center' 
+                  <div className='flex gap-1 items-center cursor-pointer' 
                   >
                     <span className='bg-blue-600 w-6 h-6 text-white flex items-center justify-center rounded-full text-xs'>
                       <FaThumbsUp/>
@@ -141,10 +143,19 @@ if(comentQuery.error){
                   </div>
                 {
                   showLike && (
-                    <div className="absolute bg-white border flex flex-col p-2 rounded-md top-6">
-                        {/* {LikesQuery.data.map((like)=>{
-                          return <span key={like.id}>{like?.username}</span>
-                        })} */}
+                    <div className="absolute bg-white border border-gray-200 shadow-lg rounded-lg p-3 top-8 left-0 min-w-[200px] z-10">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">
+                        Pessoas que curtiram:
+                      </div>
+                      <div className="space-y-1">
+                        {LikesQuery.data.map((like: ILikes) => {
+                          return like && like.username ? (
+                            <div key={like.id} className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                              {like.username}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
                   )}
                 </>
@@ -167,17 +178,17 @@ if(comentQuery.error){
           </div>
           
           { showComent && comentQuery.data?.map((coment)=>{
-             return <Coment coment={coment} key={coment.id}/>
+             return coment && coment.id ? <Coment coment={coment} key={coment.id}/> : null
             })}
 
           <div className='flex gap-4 pt-6'>
-          <Image
-          src={ user?.userimg ? user.userimg 
-          : "https://img.freepik.com/free-icon/user_318-159711.jpg"  } 
+          {user?.userimg ? <Image
+          src={ user?.userimg.includes('http') ? user.userimg 
+          : `https://api-redes-sociais.onrender.com/uploads/${user.userimg}`  } 
             alt="Imagem do perfil" className='w-8 h-8 rounded-full' width={32}
             quality={100} 
             unoptimized={true}
-            height={32}/>
+            height={32}/> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className='w-8 h-8 rounded-full' width={32} height={32} quality={100} unoptimized={true}/>}
 
           <div className='w-full bg-zinc-100 flex items-center text-gray-600 px-3 py-1 rounded-full'>
             <input

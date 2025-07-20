@@ -123,15 +123,15 @@ function Header() {
                 {/* Header do menu */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
                   <div className="flex items-center gap-3 mb-4">
-                    <Image
-                      src={user?.userimg ? user?.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                    {user?.userimg ? <Image
+                      src={user?.userimg.includes('http') ? user?.userimg : `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
                       alt="Imagem do perfil"
                       className="w-12 h-12 rounded-full border-2 border-white/20"
                       width={48}
                       height={48}
                       quality={100} 
                       unoptimized={true}
-                    />
+                    /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-12 h-12 rounded-full border-2 border-white/20" width={48} height={48} quality={100} unoptimized={true}/>}
                     <div>
                       <h3 className="font-bold text-lg">{user?.username}</h3>
                       <p className="text-blue-100 text-sm">Bem-vindo de volta!</p>
@@ -248,15 +248,15 @@ function Header() {
                       setSearchReult(false);
                     }}
                   >
-                    <Image
-                      src={users?.userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                    {users?.userimg ? <Image
+                      src={users?.userimg.includes('http') ? users?.userimg : `https://api-redes-sociais.onrender.com/uploads/${users?.userimg}`}
                       alt="Imagem do perfil"
                       className="w-8 h-8 rounded-full"
                       width={32}
                       height={32}
                       quality={100} 
                       unoptimized={true}
-                    />
+                    /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-8 h-8 rounded-full" width={32} height={32} quality={100} unoptimized={true}/>}
                     <span className="font-bold">{users?.username}</span>
                   </Link>
                 );

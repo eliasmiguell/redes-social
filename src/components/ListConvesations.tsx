@@ -148,15 +148,15 @@ function ListConversations({ onClose, isMobile }: ListConversationsProps) {
                     onClick={() => isMobile && onClose && onClose()}
                   >
                     <div className="relative">
-                      <Image 
-                        src={users?.other_userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                      {users?.other_userimg ? <Image 
+                        src={users?.other_userimg.includes('http') ? users?.other_userimg : `https://api-redes-sociais.onrender.com/uploads/${users?.other_userimg}`}
                         alt="Imagem do perfil"
                         className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
                         width={48}
                         height={48}
                         quality={100} 
                         unoptimized={true}
-                      />
+                      /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm" width={48} height={48} quality={100} unoptimized={true}/>}
                       <div className="absolute -bottom-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                     
