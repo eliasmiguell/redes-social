@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { HiChevronDown } from "react-icons/hi";
 import { makeRequest } from '../../axios';
-import { IoMenu, IoLogOut } from "react-icons/io5";
-import { MdMenuOpen } from "react-icons/md";
+import { IoLogOut } from "react-icons/io5";
 import { UserContext } from '@/context/UserContext';
 import { INotification, IUser } from '@/interface';
 
@@ -113,50 +112,117 @@ function Header() {
       <div className="w-0/1">
         {showhamburger && isMobile ? (
           <div
-            className="fixed z-10 w-[50%] flex pb-4 pl-4 bg-[#1a1a1a94] pt-[60px]"
-            onMouseLeave={() => setShowHamburger(false)}
+            className="fixed z-20 w-full h-full bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowHamburger(false)}
           >
-            <nav className="flex flex-col gap-6 text-gray600 font-seminold text-white">
-              <Link className="flex gap-2 itemns-center " href={`/profile?id=${user?.id}`}>
-                <Image
-                  src={user?.userimg ? user?.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
-                  alt="Imagem do perfil"
-                  className="w-8 h-8 rounded-full"
-                  width={32}
-                  height={32}
-                />
-                <span className="font-semibold">{user?.username}</span>
-              </Link>
-              <Link href="/followed" className="flex gap-3 itemns-center">
-                <FaUserFriends className="w-6 h-6" />
-                Seguidores
-              </Link>
-              <Link href="/messagens" className="flex gap-3 itemns-center">
-                <FaFacebookMessenger className="w-6 h-6" />
-                Mensagens
-              </Link>
-              <Link href="/notifications" className="flex gap-3 itemns-center">
-                <FaBell className="w-6 h-6" />
-                Notificações
-              </Link>
-              <Link href="" className="flex gap-3 itemns-center" onClick={() => mutation.mutate()}>
-                <IoLogOut className="w-6 h-6" />
-                Sair
-              </Link>
-            </nav>
+            <div
+              className="fixed z-30 w-80 h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col h-full">
+                {/* Header do menu */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Image
+                      src={user?.userimg ? user?.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                      alt="Imagem do perfil"
+                      className="w-12 h-12 rounded-full border-2 border-white/20"
+                      width={48}
+                      height={48}
+                      quality={100} 
+                      unoptimized={true}
+                    />
+                    <div>
+                      <h3 className="font-bold text-lg">{user?.username}</h3>
+                      <p className="text-blue-100 text-sm">Bem-vindo de volta!</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navegação */}
+                <nav className="flex-1 p-6">
+                  <div className="space-y-2">
+                    <Link 
+                      className="flex items-center gap-4 p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors group" 
+                      href={`/profile?id=${user?.id}`}
+                      onClick={() => setShowHamburger(false)}
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                        <FaUserFriends className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="font-medium">Meu Perfil</span>
+                    </Link>
+                    
+                    <Link 
+                      href="/followed" 
+                      className="flex items-center gap-4 p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors group"
+                      onClick={() => setShowHamburger(false)}
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                        <FaUserFriends className="w-5 h-5 text-green-600" />
+                      </div>
+                      <span className="font-medium">Seguidores</span>
+                    </Link>
+                    
+                    <Link 
+                      href="/messagens" 
+                      className="flex items-center gap-4 p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors group"
+                      onClick={() => setShowHamburger(false)}
+                    >
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors relative">
+                        <FaFacebookMessenger className="w-5 h-5 text-purple-600" />
+                        {totalUnreadMessages > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                            {totalUnreadMessages}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-medium">Mensagens</span>
+                    </Link>
+                    
+                    <Link 
+                      href="/notifications" 
+                      className="flex items-center gap-4 p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors group"
+                      onClick={() => setShowHamburger(false)}
+                    >
+                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                        <FaBell className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <span className="font-medium">Notificações</span>
+                    </Link>
+                  </div>
+                </nav>
+
+                {/* Footer do menu */}
+                <div className="p-6 border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      mutation.mutate();
+                      setShowHamburger(false);
+                    }}
+                    className="flex items-center gap-4 p-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors w-full group"
+                  >
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                      <IoLogOut className="w-5 h-5 text-red-600" />
+                    </div>
+                    <span className="font-medium">Sair</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         ) : null}
       </div>
 
       {/* Header principal */}
-      <header className="fixed z-10 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 flex justify-between py-3 px-6 items-center shadow-sm">
-        <Link href="/main" className="font-bold text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <header className="fixed z-10 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 flex justify-between py-3 px-4 sm:px-6 items-center shadow-sm">
+        <Link href="/main" className="font-bold text-xl sm:text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           SocialConnect
         </Link>
         
         {/* Barra de pesquisa */}
         <div
-          className="flex bg-gray-50 items-center text-gray-600 px-4 py-2 rounded-full relative border border-gray-200 hover:border-gray-300 transition-colors"
+          className={`flex bg-gray-50 items-center text-gray-600 px-3 sm:px-4 py-2 rounded-full relative border border-gray-200 hover:border-gray-300 transition-colors ${isMobile ? 'hidden' : ''}`}
           onClick={() => setSearchReult(true)}
           onMouseLeave={() => setSearchReult(false)}
         >
@@ -165,12 +231,12 @@ function Header() {
             type="text"
             value={search ? search : ''}
             placeholder="Pesquisar usuários..."
-            className="bg-transparent focus-visible:outline-none w-64"
+            className="bg-transparent focus-visible:outline-none w-48 sm:w-64"
             onChange={(e) => setSearch(e.target.value)}
           />
 
           {search && searchResult && (
-            <div className="absolute flex-col bg-white p-4 shadow-md rounded-md gap-2 border-t whitespace-nowrap right-0 left-0 top-[100%]">
+            <div className="absolute flex-col bg-white p-4 shadow-md rounded-md gap-2 border-t whitespace-nowrap right-0 left-0 top-[100%] z-50">
               {data?.map((users: IUser) => {
                 return (
                   <Link
@@ -209,14 +275,88 @@ function Header() {
           )}
         </div>
 
+        {/* Barra de pesquisa mobile */}
+        {isMobile && searchResult && (
+          <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-200 p-4 shadow-lg">
+            <div className="flex bg-gray-50 items-center text-gray-600 px-4 py-3 rounded-full border border-gray-200">
+              <FaSearch className="text-gray-400 mr-3" />
+              <input
+                type="text"
+                value={search ? search : ''}
+                placeholder="Pesquisar usuários..."
+                className="bg-transparent focus-visible:outline-none flex-1"
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+              />
+              <button
+                onClick={() => setSearchReult(false)}
+                className="ml-2 p-1 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {search && data && (
+              <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+                {data?.map((users: IUser) => (
+                  <Link
+                    href={`/profile?id=${users?.id}`}
+                    key={users.id}
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      setSearch(null);
+                      setSearchReult(false);
+                    }}
+                  >
+                    <Image
+                      src={users?.userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                      alt="Imagem do perfil"
+                      className="w-10 h-10 rounded-full mr-3"
+                      width={40}
+                      height={40}
+                      quality={100} 
+                      unoptimized={true}
+                    />
+                    <span className="font-medium text-gray-800">{users?.username}</span>
+                  </Link>
+                ))}
+                <Link
+                  href={`search?params=${search}`}
+                  onClick={() => {
+                    setSearch(null);
+                    setSearchReult(false);
+                  }}
+                  className="block p-2 text-center text-blue-600 font-medium border-t border-gray-100"
+                >
+                  Ver todos os resultados
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Ações do usuário */}
         {isMobile ? (
-          <div onClick={() => setShowHamburger(!showhamburger)}>
-            {showhamburger ? (
-              <MdMenuOpen className="w-8 h-8" />
-            ) : (
-              <IoMenu className="w-8 h-8" />
-            )}
+          <div className="flex items-center gap-3">
+            {/* Botão de pesquisa no mobile */}
+            <button
+              onClick={() => setSearchReult(!searchResult)}
+              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <FaSearch className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            {/* Botão hambúrguer melhorado */}
+            <button
+              onClick={() => setShowHamburger(!showhamburger)}
+              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors relative"
+            >
+              <div className="w-6 h-6 flex flex-col justify-center items-center gap-1">
+                <div className={`w-5 h-0.5 bg-gray-600 transition-all duration-300 ${showhamburger ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+                <div className={`w-5 h-0.5 bg-gray-600 transition-all duration-300 ${showhamburger ? 'opacity-0' : ''}`}></div>
+                <div className={`w-5 h-0.5 bg-gray-600 transition-all duration-300 ${showhamburger ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+              </div>
+            </button>
           </div>
         ) : (
           <>

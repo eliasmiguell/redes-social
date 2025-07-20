@@ -50,22 +50,22 @@ function Register() {
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl flex items-center justify-center mr-4">
-            <FaUserPlus className="text-white text-2xl" />
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center mb-4 gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl flex items-center justify-center">
+            <FaUserPlus className="text-white text-lg sm:text-2xl" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Criar Conta</h1>
-            <p className="text-gray-600">Junte-se à nossa comunidade</p>
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Criar Conta</h1>
+            <p className="text-sm sm:text-base text-gray-600">Junte-se à nossa comunidade</p>
           </div>
         </div>
       </div>
 
       {/* Formulário */}
-      <form onSubmit={handleRegister} className="space-y-6">
+      <form onSubmit={handleRegister} className="space-y-4 sm:space-y-6">
         {/* Campo Nome */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
@@ -73,13 +73,13 @@ function Register() {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaUser className="h-5 w-5 text-gray-400" />
+              <FaUser className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
             <input
               type="text"
               value={username}
               onChange={(e) => setUserName(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm sm:text-base"
               placeholder="Digite seu nome de usuário"
               required
             />
@@ -93,13 +93,13 @@ function Register() {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaEnvelope className="h-5 w-5 text-gray-400" />
+              <FaEnvelope className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm sm:text-base"
               placeholder="Digite seu email"
               required
             />
@@ -113,13 +113,13 @@ function Register() {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaLock className="h-5 w-5 text-gray-400" />
+              <FaLock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="block w-full pl-9 sm:pl-10 pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm sm:text-base"
               placeholder="Digite sua senha"
               required
             />
@@ -129,9 +129,9 @@ function Register() {
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
             >
               {showPassword ? (
-                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <FaEyeSlash className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
               ) : (
-                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <FaEye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
               )}
             </button>
           </div>
@@ -144,13 +144,13 @@ function Register() {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaLock className="h-5 w-5 text-gray-400" />
+              <FaLock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="block w-full pl-9 sm:pl-10 pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm sm:text-base"
               placeholder="Confirme sua senha"
               required
             />
@@ -160,9 +160,9 @@ function Register() {
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
             >
               {showConfirmPassword ? (
-                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <FaEyeSlash className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
               ) : (
-                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <FaEye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
               )}
             </button>
           </div>
@@ -172,11 +172,11 @@ function Register() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           {isLoading ? (
             <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
               Criando conta...
             </>
           ) : (
@@ -189,7 +189,7 @@ function Register() {
       </form>
 
       {/* Links adicionais */}
-      <div className="mt-8 text-center space-y-4">
+      <div className="mt-6 sm:mt-8 text-center space-y-3 sm:space-y-4">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300" />
@@ -201,7 +201,7 @@ function Register() {
 
         <Link 
           href="/login" 
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors text-sm sm:text-base"
         >
           <FaSignInAlt />
           Já tem uma conta? Faça login
@@ -209,7 +209,7 @@ function Register() {
       </div>
 
       {/* Footer */}
-      <div className="mt-8 text-center">
+      <div className="mt-6 sm:mt-8 text-center">
         <p className="text-xs text-gray-500">
           Ao criar uma conta, você concorda com nossos{' '}
           <Link href="#" className="text-blue-600 hover:underline">Termos de Serviço</Link>
