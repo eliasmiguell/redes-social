@@ -50,6 +50,10 @@ function Notification() {
     switch (type) {
       case 'follow':
         return <FaUserPlus className="text-blue-600" />;
+      case 'follow_request':
+        return <FaUserPlus className="text-orange-600" />;
+      case 'follow_accepted':
+        return <FaUserPlus className="text-green-600" />;
       case 'like':
         return <FaHeart className="text-red-600" />;
       case 'comment':

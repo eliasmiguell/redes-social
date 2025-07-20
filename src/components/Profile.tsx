@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Feed from '@/components/Feed';
 import { useContext, useState, MouseEvent } from 'react';
 import { UserContext } from '@/context/UserContext';
-import { IPost, IFriendship, IChat } from '@/interface'; 
+import { IPost, IChat } from '@/interface'; 
 import { FaTimesCircle } from 'react-icons/fa';
 import { FaUserFriends, FaComments, FaEdit } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
@@ -52,16 +52,62 @@ function Profile() {
 
   // Consulta para verificar se o usuário está seguindo o perfil
   const friendQuery = useQuery({
-    queryKey: ['friendship', id],
+    queryKey: ['friendship-status', user?.id, id],
     queryFn: async () => {
-      const res = await makeRequest.get(`friendship/?follower_id=${user?.id}`);
-      res.data.data.find((e: IFriendship) => {
-        if (e.followed_id === id) {
-          setFollowed(true);
-        }
-      });
-      return res.data.data;
-    }, enabled: !! id
+      const res = await makeRequest.get(`friendship/status?follower_id=${user?.id}&followed_id=${id}`);
+      const status = res.data.status;
+      if (status === 'accepted') {
+        setFollowed(true);
+      } else {
+        setFollowed(false);
+      }
+      return status;
+    }, 
+    enabled: !!id && !!user?.id && user?.id !== id
+  });
+
+  // Mutação para enviar solicitação de amizade
+  const sendRequestMutation = useMutation({
+    mutationFn: async (request: { 
+      follower_id: number; 
+      followed_id: number; 
+    }) => {
+      return await makeRequest
+        .post(`/friendship/request`, {
+          follower_id: request.follower_id,
+          followed_id: request.followed_id,
+        })
+        .then((res) => {
+          return res.data;
+        });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendship-status', user?.id, id] });
+    },
+    onError: (error) => {
+      console.error('Erro na mutação:', error);
+    }
+  });
+
+  // Mutação para deixar de seguir o perfil
+  const unfollowMutation = useMutation({
+    mutationFn: async (unfollow: { 
+      follower_id: number; 
+      followed_id: number; 
+    }) => {
+      return makeRequest
+        .delete(`/friendship/?follower_id=${unfollow.follower_id}&followed_id=${unfollow.followed_id}`)
+        .then((res) => {
+          setFollowed(false);
+          return res.data;
+        });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendship-status', user?.id, id] });
+    },
+    onError: (error) => {
+      console.error('Erro na mutação:', error);
+    }
   });
 
   
@@ -86,42 +132,6 @@ function Profile() {
     enabled: !!user?.id,
   });
   
-
-  // Mutação para seguir/deixar de seguir o perfil
-  const mutation = useMutation({
-    mutationFn: async (paraDeSeguir: { 
-      follower_id: number; 
-      followed_id: number; 
-      followed: boolean;
-    }) => {
-      if (paraDeSeguir.followed) {
-        return makeRequest
-          .delete(`/friendship/?follower_id=${paraDeSeguir.follower_id}&followed_id=${paraDeSeguir.followed_id}`)
-          .then((res) => {
-            setFollowed(false);
-            return res.data;
-          });
-      } else {
-        return await makeRequest
-          .post(`/friendship/`, {
-            follower_id: paraDeSeguir.follower_id,
-            followed_id: paraDeSeguir.followed_id,
-          })
-          .then((res) => {
-            setFollowed(true);
-            return res.data;
-          });
-      }
-    },
-    onSuccess: () => {
-      setFollowed(false);
-      // Invalida a query para que as informações de amizade sejam atualizadas
-      queryClient.invalidateQueries({ queryKey: ['friendship'] });
-    },
-    onError: (error) => {
-      console.error('Erro na mutação:', error);
-    }
-  });
 
   // Edita usuário
   const editeProfileMutation = useMutation({
@@ -278,7 +288,15 @@ function Profile() {
                       ? 'bg-gray-200 text-gray-800 hover:bg-red-500 hover:text-white' 
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
-                  onClick={() => user && mutation.mutate({ follower_id: user.id, followed_id: id, followed })}
+                  onClick={() => {
+                    if (user) {
+                      if (followed) {
+                        unfollowMutation.mutate({ follower_id: user.id, followed_id: id });
+                      } else {
+                        sendRequestMutation.mutate({ follower_id: user.id, followed_id: id });
+                      }
+                    }
+                  }}
                 >
                   {followed ? 'Deixar de seguir' : 'Seguir'}
                 </button>

@@ -1,7 +1,9 @@
 export interface IFriendship{
-  id: number,
+  id:number,
   follower_id:number,
   followed_id:number,
+  status: 'pending' | 'accepted' | 'rejected',
+  created_at:string,
   username:string,
   userimg:string
 }
