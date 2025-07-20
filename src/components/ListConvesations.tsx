@@ -149,10 +149,10 @@ function ListConversations({ onClose, isMobile }: ListConversationsProps) {
                   >
                     <div className="relative">
                       {users?.other_userimg ? <Image 
-                        src={users?.other_userimg.includes('http') ? users?.other_userimg : `https://api-redes-sociais.onrender.com/uploads/${users?.other_userimg}`}
+                            src={users?.other_userimg.includes('http') ? users?.other_userimg : `https://api-redes-sociais.onrender.com/uploads/${users?.other_userimg}`}
                         alt="Imagem do perfil"
                         className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                        width={48}
+                              width={48}
                         height={48}
                         quality={100} 
                         unoptimized={true}

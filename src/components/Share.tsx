@@ -63,7 +63,7 @@ function Share() {
         <div className="relative">
           {postImg ? <Image 
             className='rounded-xl w-full max-h-64 object-cover' 
-            src={postImg.includes('http') ? postImg : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${postImg}`} 
+            src={postImg.includes('http') ? postImg : `https://api-redes-sociais.onrender.com/uploads/${postImg}`} 
             alt='imagem posts'
             width={400}
             height={200} 
@@ -83,7 +83,7 @@ function Share() {
             
       <div className='flex items-center gap-4'>
        {user?.userimg ? <Image
-          src={user?.userimg.includes('http') ? user?.userimg : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${user?.userimg}`}
+            src={user?.userimg.includes('http') ? user?.userimg : `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
           alt="Imagem do perfil"
           className='w-12 h-12 rounded-full border-2 border-white shadow-sm'
           width={48}

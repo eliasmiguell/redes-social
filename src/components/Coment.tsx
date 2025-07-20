@@ -9,7 +9,7 @@ function Coment(props:{coment : IComents}) {
   return(
     <div className='mt-6 flex gap-2'>
       {userimg ? <Image
-           src={userimg.includes('http') ? userimg : `https://api-redes-sociais.onrender.com/uploads/${userimg}`}
+              src={userimg.includes('http') ? userimg : `https://api-redes-sociais.onrender.com/uploads/${userimg}`}
             alt="imagem do perfil " 
             className='w-8 h-8 rounded-full' width={32}
             height={32}

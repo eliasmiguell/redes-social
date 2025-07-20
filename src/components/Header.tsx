@@ -67,7 +67,7 @@ function Header() {
   const GetNotification = useQuery<INotification[] | undefined>({
     queryKey: ['notification', user?.id],
     queryFn: () =>
-      makeRequest.get(`/notifications/?id_user=${user?.id}`).then((res) => res.data.data),
+      makeRequest.get(`/notifications/?user_id=${user?.id}`).then((res) => res.data.data),
     enabled: !!user?.id,
   });
 
@@ -75,36 +75,9 @@ function Header() {
     console.log(GetNotification.error);
   }
 
-  // Agrupar notificações por `sender_id` e contar o total de mensagens
-  const groupedNotifications = GetNotification.data?.reduce(
-    (acc, notification) => {
-      if (!acc[notification.sender_id]) {
-        acc[notification.sender_id] = {
-          sender_id: notification.sender_id,
-          username: notification.username,
-          userimg: notification.userimg,
-          messagesCount: 0,
-        };
-      }
-      acc[notification.sender_id].messagesCount += 1;
-      return acc;
-    },
-    {} as Record<
-      string,
-      {
-        sender_id: number;
-        username: string;
-        userimg: string | null;
-        messagesCount: number;
-      }
-    >
-  );
-
-  // Convertendo o objeto agrupado em lista
-  const groupedList = groupedNotifications ? Object.values(groupedNotifications) : [];
-
-  // Contabilizando o total de mensagens não lidas
-  const totalUnreadMessages = groupedList.reduce((total, notific) => total + notific.messagesCount, 0);
+  // Contar notificações não lidas
+  const unreadNotifications = GetNotification.data?.filter(n => !n.is_read) || [];
+  const totalUnreadNotifications = unreadNotifications.length;
 
   return (
     <>
@@ -171,9 +144,9 @@ function Header() {
                     >
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors relative">
                         <FaFacebookMessenger className="w-5 h-5 text-purple-600" />
-                        {totalUnreadMessages > 0 && (
+                        {totalUnreadNotifications > 0 && (
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                            {totalUnreadMessages}
+                            {totalUnreadNotifications}
                           </span>
                         )}
                       </div>
@@ -364,28 +337,33 @@ function Header() {
               <div className="flex gap-3">
                 <Link href="/messagens" className="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition-colors">
                   <FaFacebookMessenger className="text-gray-600" />
-                  {totalUnreadMessages > 0 && (
+                  {totalUnreadNotifications > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {totalUnreadMessages}
+                  {totalUnreadNotifications}
                   </span>
                   )}
                 </Link>
-                <Link href="/notifications" className="bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition-colors">
+                <Link href="/notifications" className="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition-colors">
                   <FaBell className="text-gray-600" />
+                  {totalUnreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {totalUnreadNotifications}
+                    </span>
+                  )}
                 </Link>
               </div>
 
               <div className="relative" onMouseLeave={() => setShowMenu(false)}>
                 <button className="flex gap-2 items-center hover:bg-gray-100 p-2 rounded-full transition-colors" onClick={() => setShowMenu(!showMenu)}>
-                  <Image
-                    src={user?.userimg ? user.userimg : "https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                  {user?.userimg ? <Image
+                    src={user?.userimg.includes('http') ? user?.userimg :  `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
                     alt="Imagem do perfil"
                     className="w-8 h-8 rounded-full object-cover"
                     width={32}
                     height={32}
                     quality={100} 
                     unoptimized={true}
-                  />
+                  /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-8 h-8 rounded-full object-cover" width={32} height={32} quality={100} unoptimized={true}/>}
                   <span className="font-semibold text-gray-800">{user?.username}</span>
                   <HiChevronDown className="text-gray-500" />
                 </button>

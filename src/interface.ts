@@ -39,14 +39,15 @@ export interface IUser{
 
 export interface INotification{
   id:number,
-  username:string,
-  userimg:string,
-  messages:string,
-  conversations:number,
-  sent_at:number,
-  is_read:boolean
-  sender_id:number,
-  recipient_id:number
+  user_id: number,
+  from_user_id: number,
+  from_username: string,
+  from_userimg: string,
+  notification_type: string,
+  reference_id?: number,
+  message: string,
+  is_read: boolean,
+  created_at: string
 }
 
  export interface IChat{

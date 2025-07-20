@@ -20,40 +20,13 @@ function Sidebar() {
   const GetNotification = useQuery<INotification[] | undefined>({
     queryKey: ['notification', user?.id],
     queryFn: () =>
-      makeRequest.get(`/notifications/?id_user=${user?.id}`).then((res) => res.data.data),
+      makeRequest.get(`/notifications/?user_id=${user?.id}`).then((res) => res.data.data),
     enabled: !!user?.id,
   });
 
-  // Agrupar notificações por `sender_id` e contar o total de mensagens
-  const groupedNotifications = GetNotification.data?.reduce(
-    (acc, notification) => {
-      if (!acc[notification.sender_id]) {
-        acc[notification.sender_id] = {
-          sender_id: notification.sender_id,
-          username: notification.username,
-          userimg: notification.userimg,
-          messagesCount: 0,
-        };
-      }
-      acc[notification.sender_id].messagesCount += 1;
-      return acc;
-    },
-    {} as Record<
-      string,
-      {
-        sender_id: number;
-        username: string;
-        userimg: string | null;
-        messagesCount: number;
-      }
-    >
-  );
-
-  // Convertendo o objeto agrupado em lista
-  const groupedList = groupedNotifications ? Object.values(groupedNotifications) : [];
-
-  // Contabilizando o total de mensagens não lidas
-  const totalUnreadMessages = groupedList.reduce((total, notific) => total + notific.messagesCount, 0);
+  // Contar notificações não lidas
+  const unreadNotifications = GetNotification.data?.filter(n => !n.is_read) || [];
+  const totalUnreadNotifications = unreadNotifications.length;
   
   if (GetNotification.error) {
     console.log(GetNotification.error);
@@ -69,9 +42,9 @@ function Sidebar() {
             href={`/profile?id=${id}`}
           >
             {user?.userimg ? <Image
-              src={user?.userimg.includes('http') ? user?.userimg : `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
+                src={user?.userimg.includes('http') ? user?.userimg : `https://api-redes-sociais.onrender.com/uploads/${user?.userimg}`}
               alt="Imagem do perfil"
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
               width={40}
               height={40}
               quality={100} 
@@ -100,19 +73,24 @@ function Sidebar() {
           >
             <FaFacebookMessenger className="w-5 h-5" />
             <span className="font-medium">Mensagens</span>
-            {totalUnreadMessages > 0 && (
+            {totalUnreadNotifications > 0 && (
               <span className="absolute right-3 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {totalUnreadMessages}
+                {totalUnreadNotifications}
               </span>
             )}
           </Link>
 
           <Link 
             href="/notifications" 
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 hover:text-blue-600"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 hover:text-blue-600 relative"
           >
             <FaBell className="w-5 h-5" />
             <span className="font-medium">Notificações</span>
+            {totalUnreadNotifications > 0 && (
+              <span className="absolute right-3 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {totalUnreadNotifications}
+              </span>
+            )}
           </Link>
         </div>
       </nav>

@@ -199,15 +199,14 @@ function Profile() {
       <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Imagem de fundo */}
         <div className="relative h-64 bg-gradient-to-r from-blue-600 to-purple-600">
-        <Image
-          src={profileQuery.data?.bgimg
-            ? profileQuery.data?.bgimg
-            : 'https://www.biotecdermo.com.br/wp-content/uploads/2016/10/sem-imagem-10.jpg'}
-          className="rounded-xl" alt="Imagem de fundo do perfil"   width={32}
+        {profileQuery.data?.bgimg ? <Image
+          src={profileQuery.data?.bgimg.includes('http') ? profileQuery.data?.bgimg : `https://api-redes-sociais.onrender.com/uploads/${profileQuery.data?.bgimg}`}
+            alt="Imagem de fundo do perfil"
+          className="rounded-xl"   width={32}
           layout="responsive" 
           quality={100} 
             unoptimized={true}
-          height={32}      />
+          height={32}      /> : <Image src={"https://www.biotecdermo.com.br/wp-content/uploads/2016/10/sem-imagem-10.jpg"} alt="Imagem de fundo do perfil" width={32} height={32} quality={100} unoptimized={true}/>}
           {/* Botão de upload removido - usando apenas URLs */}
           {/* {user?.id === id && (
             <button
@@ -230,14 +229,12 @@ function Profile() {
         <div className="relative px-6 pb-6">
           <div className="flex items-end -mt-20 mb-4">
             <div className="relative">
-            <Image
-          src={profileQuery.data?.userimg
-            ? profileQuery.data?.userimg
-            : 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
+            {profileQuery.data?.userimg ? <Image
+          src={profileQuery.data?.userimg.includes('http') ? profileQuery.data?.userimg : `https://api-redes-sociais.onrender.com/uploads/${profileQuery.data?.userimg}`}
           className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover" alt="Imagem do perfil"   width={128}
           quality={100} 
             unoptimized={true}
-          height={128}      />
+          height={128}      /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover" width={128} height={128} quality={100} unoptimized={true}/>} 
               {/* Botão de upload removido - usando apenas URLs */}
               {/* {user?.id === id && (
                 <button

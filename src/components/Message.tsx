@@ -146,7 +146,7 @@ function Message() {
               <Link href={`/profile?id=${res?.id}`} className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
                 <div className="relative">
                   {res?.userimg ? <Image
-                    src={res?.userimg.includes('http') ? res?.userimg : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${res?.userimg}`}
+                    src={res?.userimg.includes('http') ? res?.userimg : `https://api-redes-sociais.onrender.com/uploads/${res?.userimg}`}
                     alt="Imagem do perfil"
                     className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white shadow-sm"
                     width={40}
