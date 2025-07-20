@@ -121,7 +121,7 @@ if(comentQuery.error){
           <div className='py-4 w-full'>
             <span >{post_desc}</span>
           </div>)}
-          {img && <Image src={`/upload/${img}`} alt='imagem do post'className='rounded-lg'  width={400}
+          {img && <Image src={`${img}`} alt='imagem do post'className='rounded-lg'  width={400}
           layout="responsive" 
           quality={100} 
             unoptimized={true}

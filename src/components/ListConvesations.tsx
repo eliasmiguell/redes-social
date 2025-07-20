@@ -7,9 +7,14 @@ import { useContext, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { IChat, INotification } from '@/interface';
 import { BsThreeDots } from "react-icons/bs";
-import { FaComments } from 'react-icons/fa';
+import { FaComments, FaTimes } from 'react-icons/fa';
 
-function ListConversations() {
+interface ListConversationsProps {
+  onClose?: () => void;
+  isMobile?: boolean;
+}
+
+function ListConversations({ onClose, isMobile }: ListConversationsProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const { user } = useContext(UserContext);
@@ -78,14 +83,24 @@ function ListConversations() {
   if (!data || !Array.isArray(data)) {
     return (
       <div className="h-full flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <FaComments className="text-white text-xl" />
+        <div className="p-4 md:p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-3 mb-2">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <FaComments className="text-white text-lg md:text-xl" />
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Chat</h2>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">Chat</h2>
+            {isMobile && onClose && (
+              <button
+                onClick={onClose}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <FaTimes className="text-gray-600" />
+              </button>
+            )}
           </div>
-          <p className="text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
+          <p className="text-xs md:text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -100,43 +115,54 @@ function ListConversations() {
   return (
     <div className="h-full flex flex-col">
       {/* Header da lista de conversas */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
-            <FaComments className="text-white text-xl" />
+      <div className="p-4 md:p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3 mb-2">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <FaComments className="text-white text-lg md:text-xl" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">Chat</h2>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Chat</h2>
+          {isMobile && onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <FaTimes className="text-gray-600" />
+            </button>
+          )}
         </div>
-        <p className="text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
+        <p className="text-xs md:text-sm text-gray-500">Conecte-se com seus amigos através de mensagens privadas</p>
       </div>
 
       {/* Lista de conversas */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4">
-          <nav className="space-y-2">
+        <div className="p-3 md:p-4">
+          <nav className="space-y-1 md:space-y-2">
             {uniqueConversations && uniqueConversations.length > 0 ? (
               uniqueConversations.map((users: IChat & { uniqueKey: string }) => (
                 <div key={users.uniqueKey} className="relative">
                   <Link 
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group" 
+                    className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl hover:bg-gray-50 transition-colors group" 
                     href={`/messagens/?conversationsId=${users?.id}`}
+                    onClick={() => isMobile && onClose && onClose()}
                   >
                     <div className="relative">
                       <Image 
                         src={users?.other_userimg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
                         alt="Imagem do perfil"
-                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
                         width={48}
                         height={48}
                         quality={100} 
                         unoptimized={true}
                       />
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-800 truncate">{users?.other_username}</h3>
+                        <h3 className="font-semibold text-gray-800 truncate text-sm md:text-base">{users?.other_username}</h3>
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
@@ -144,16 +170,16 @@ function ListConversations() {
                           }}
                           className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-gray-200 transition-all"
                         >
-                          <BsThreeDots className="text-gray-500" />
+                          <BsThreeDots className="text-gray-500 text-sm" />
                         </button>
                       </div>
-                      <p className="text-sm text-gray-500">Online agora</p>
+                      <p className="text-xs md:text-sm text-gray-500">Online agora</p>
                     </div>
                   </Link>
                   
                   {showMenu && selectedUserId === users.id && (
                     <div 
-                      className="absolute right-2 top-12 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10"
+                      className="absolute right-2 top-12 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10 min-w-[140px]"
                       onMouseLeave={() => setShowMenu(false)}
                     >
                       <button
@@ -170,12 +196,12 @@ function ListConversations() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaComments className="text-gray-400 text-2xl" />
+              <div className="text-center py-8 md:py-12 px-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaComments className="text-gray-400 text-xl md:text-2xl" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Nenhuma conversa encontrada</h3>
-                <p className="text-gray-500">Comece uma conversa com seus amigos!</p>
+                <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">Nenhuma conversa encontrada</h3>
+                <p className="text-sm md:text-base text-gray-500">Comece uma conversa com seus amigos!</p>
               </div>
             )}
           </nav>
