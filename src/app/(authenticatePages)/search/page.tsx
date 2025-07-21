@@ -142,7 +142,7 @@ function SearchPage() {
                   <Link href={`profile?id=${user?.id}`} className="block">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <Image
+                       {user?.userimg ? <Image
                           src={user?.userimg || 'https://img.freepik.com/free-icon/user_318-159711.jpg'}
                           alt="Imagem do perfil"
                           className="w-12 h-12 rounded-full object-cover"
@@ -150,7 +150,15 @@ function SearchPage() {
                           height={48}
                           quality={100} 
                           unoptimized={true}
-                        />
+                        /> : <Image
+                          src={"https://img.freepik.com/free-icon/user_318-159711.jpg"}
+                          alt="Imagem do perfil"
+                          className="w-12 h-12 rounded-full object-cover"
+                          width={48}
+                          height={48}
+                          quality={100} 
+                          unoptimized={true}
+                        />}
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                       </div>
                       <div className="flex-1 min-w-0">

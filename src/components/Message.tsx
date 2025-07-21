@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { IMessage, IUser, getValidImageUrl } from '@/interface';
+import { IMessage, IUser } from '@/interface';
 import { makeRequest } from '../../axios';
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import moment from 'moment';
 import 'moment/locale/pt-br';
+import { io as socketIOClient } from 'socket.io-client';
 
 // Configurar moment para português brasileiro
 moment.locale('pt-br');
@@ -189,6 +190,25 @@ function Message() {
     }
   }, [id, user?.id, messgeQuery.data]);
 
+  // Conectar ao socket.io e registrar usuário
+  useEffect(() => {
+    if (!user?.id) return;
+    const socketInstance = socketIOClient(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api-redes-sociais.onrender.com', {
+      withCredentials: true
+    });
+    socketInstance.emit('registrar_usuario', user.id);
+    // Receber nova mensagem em tempo real
+    socketInstance.on('nova_mensagem', (msg) => {
+      // Se a mensagem for para a conversa atual, atualiza a lista
+      if (msg.conversationId == id) {
+        queryClient.invalidateQueries({ queryKey: ['message', id] });
+      }
+    });
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [user?.id, id, queryClient]);
+
   // Verificar se a conversa é válida
   if (!id || id === 0) {
     return (
@@ -278,15 +298,15 @@ function Message() {
                     {showImage && !isUserMessage && (
                       <div className="flex-shrink-0">
                         <Link href={`/profile?id=${idUserConversa?.id}`}>
-                          <Image
-                            src={getValidImageUrl(message?.userimg)}
+                          {message?.userimg ? <Image
+                              src={message?.userimg.includes('http') ? message?.userimg : `https://api-redes-sociais.onrender.com/uploads/${message?.userimg}`}
                             alt="Imagem do perfil"
                             className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                             width={32}
                             height={32}
                             quality={100} 
                             unoptimized={true}
-                          />
+                          /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover" width={32} height={32} quality={100} unoptimized={true}/>}
                         </Link>
                       </div>
                     )}
@@ -349,15 +369,15 @@ function Message() {
                     {showImage && isUserMessage && (
                       <div className="flex-shrink-0">
                         <Link href={`/profile?id=${user?.id}`}>
-                          <Image
-                            src={getValidImageUrl(message?.userimg)}
+                          {message?.userimg ? <Image
+                            src={message?.userimg.includes('http') ? message?.userimg : `https://api-redes-sociais.onrender.com/uploads/${message?.userimg}`}
                             alt="Imagem do perfil"
                             className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                             width={32}
                             height={32}
                             quality={100} 
                             unoptimized={true}
-                          />
+                          /> : <Image src={"https://img.freepik.com/free-icon/user_318-159711.jpg"} alt="Imagem do perfil" className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover" width={32} height={32} quality={100} unoptimized={true}/>}
                         </Link>
                       </div>
                     )}

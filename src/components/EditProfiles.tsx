@@ -85,7 +85,7 @@ function EditProfile() {
 
   return (
     <div className="flex items-center w-5/6 sm:w-2/6 justify-center ">
-      <div className="bg-white w-full rounded-xl flex flex-col items-center rounded-lg p-4 shadow-md">
+      <div className="bg-white w-full flex flex-col items-center rounded-lg p-4 shadow-md">
         <header className="w-full border-b font-semibold text-lg text-zinc-600 flex justify-between items-center p-2">
           Editar Perfil
         </header>
@@ -114,7 +114,7 @@ function EditProfile() {
               <div className="mt-2">
                 <p className="text-sm text-gray-500 mb-1">Prévia:</p>
                 <Image 
-                  src={userimg} 
+                  src={userimg.includes('http') ? userimg : `https://api-redes-sociais.onrender.com/uploads/${userimg}`} 
                   alt="Prévia da imagem de perfil" 
                   className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                   width={64}
