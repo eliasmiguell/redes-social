@@ -123,11 +123,11 @@ if(comentQuery.error){
           <div className='py-4 w-full'>
             <span >{post_desc}</span>
           </div>)}
-          {img && img.trim() !== '' && <Image src={ img.includes('http') ? img : `https://api-redes-sociais.onrender.com/uploads/${img}` } alt='imagem do post'className='rounded-lg'  width={400}
+          {img ? <Image src={ img.includes('http') ? img : `https://api-redes-sociais.onrender.com/uploads/${img}` } alt='imagem do post'className='rounded-lg'  width={400}
           layout="responsive" 
           quality={100} 
             unoptimized={true}
-            height={400}/>}
+            height={400}/> : null}
           <div className='flex justify-between py-4 border-b'>
               <div  onMouseEnter={()=>setShowLike(true)}
                   onMouseLeave={()=>setShowLike(false)}
